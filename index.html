@@ -1,0 +1,783 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tecnophone Market — iPhones nuevos y usados con garantía de 60 días</title>
+<meta name="description" content="Venta de iPhones nuevos y usados seleccionados en Argentina. Revisión de 32 puntos, salud de batería informada, garantía escrita de 60 días y envíos a todo el país.">
+<link rel="icon" type="image/png" href="assets/logo-icon-black.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+
+/* ============ Design tokens (Tecnophone Market design system) ============ */
+:root{
+  --ink-900:#0A0A0A;
+  --ink-800:#1A1A1A;
+  --white:#FFFFFF;
+  --gray-200:#D9D9D9;
+  --gray-500:#8C8C8C;
+  --teal-500:#14B8A6;
+  --teal-700:#0F6B63;
+
+  --bg-page:var(--white);
+  --bg-surface:var(--white);
+  --bg-sunken:#F2F2F2;
+  --bg-inverse:var(--ink-900);
+  --bg-inverse-raised:var(--ink-800);
+
+  --text-primary:var(--ink-900);
+  --text-secondary:var(--gray-500);
+  --text-strike:var(--gray-500);
+
+  --border-subtle:var(--gray-200);
+  --border-inverse:#2E2E2E;
+
+  --accent:var(--teal-500);
+  --accent-hover:var(--teal-700);
+  --accent-contrast:var(--white);
+  --focus-ring:var(--teal-500);
+
+  --space-1:4px; --space-2:8px; --space-3:12px; --space-4:16px;
+  --space-5:24px; --space-6:32px; --space-7:48px; --space-8:64px; --space-9:96px;
+
+  --radius-sm:8px; --radius-md:16px; --radius-lg:24px; --radius-pill:999px;
+
+  --shadow-card:0 1px 2px rgba(10,10,10,0.04),0 8px 24px rgba(10,10,10,0.06);
+  --shadow-card-hover:0 4px 8px rgba(10,10,10,0.06),0 16px 32px rgba(10,10,10,0.10);
+
+  --ease-standard:cubic-bezier(.4,0,.2,1);
+  --dur-fast:120ms;
+  --dur-base:200ms;
+
+  --font-display:'Plus Jakarta Sans',system-ui,sans-serif;
+  --font-body:'Manrope',system-ui,sans-serif;
+
+  --fs-price:26px;
+  --fs-small:14px;
+  --fs-micro:12px;
+}
+
+/* ============ Base ============ */
+*{ box-sizing:border-box; }
+html{ scroll-behavior:smooth; }
+body{
+  margin:0;
+  background:var(--bg-page);
+  color:var(--text-primary);
+  font-family:var(--font-body);
+  -webkit-font-smoothing:antialiased;
+  overflow-x:hidden;
+}
+h1,h2,h3,h4{ margin:0; font-family:var(--font-display); }
+p{ margin:0; }
+a{ color:var(--accent-hover); text-decoration:none; }
+a:hover{ color:var(--accent); }
+img{ max-width:100%; display:block; }
+button{ font-family:inherit; }
+:focus-visible{ outline:2px solid var(--focus-ring); outline-offset:2px; }
+
+.container{ max-width:1200px; margin:0 auto; padding-inline:clamp(20px,5vw,64px); }
+.section{ padding-block:clamp(56px,7vw,96px); }
+.eyebrow{
+  font-size:var(--fs-micro); font-weight:600; letter-spacing:0.14em;
+  text-transform:uppercase; color:var(--accent-hover);
+}
+.eyebrow.on-dark{ color:var(--accent); }
+.section-head{ display:flex; flex-direction:column; gap:var(--space-4); max-width:680px; }
+.section-head h2{ font-weight:800; font-size:clamp(28px,4vw,44px); line-height:1.1; letter-spacing:-0.02em; text-wrap:pretty; }
+.divider{ flex:1; height:1px; background:var(--border-subtle); }
+
+/* ============ Buttons ============ */
+.btn{
+  font-family:var(--font-display); font-weight:700; font-size:17px;
+  border-radius:var(--radius-pill); padding:16px 32px; border:none;
+  display:inline-flex; align-items:center; justify-content:center; gap:8px;
+  cursor:pointer; text-align:center;
+  transition:background var(--dur-fast) var(--ease-standard),
+             color var(--dur-fast) var(--ease-standard),
+             border-color var(--dur-fast) var(--ease-standard),
+             transform var(--dur-fast) var(--ease-standard);
+}
+.btn:active{ transform:scale(0.97); }
+.btn-primary{ background:var(--accent); color:var(--accent-contrast); }
+.btn-primary:hover{ background:var(--accent-hover); color:var(--accent-contrast); }
+.btn-outline-dark{ background:transparent; color:var(--white); border:2px solid var(--border-inverse); padding:14px 30px; }
+.btn-outline-dark:hover{ border-color:var(--accent); color:var(--accent); }
+.btn-dark{ background:var(--ink-900); color:var(--white); }
+.btn-dark:hover{ background:var(--ink-800); }
+.btn-sm{ font-size:15px; padding:13px 24px; }
+.btn-block{ width:100%; }
+
+/* ============ Header ============ */
+.site-header{
+  position:sticky; top:0; z-index:50; background:var(--bg-inverse);
+  border-bottom:1px solid var(--border-inverse);
+}
+.header-row{
+  display:flex; align-items:center; justify-content:space-between; gap:var(--space-4);
+  padding-block:14px;
+}
+.brand{ display:flex; align-items:center; gap:10px; }
+.brand img{ height:38px; width:auto; border-radius:8px; }
+.brand-name{ font-family:var(--font-display); font-weight:800; font-size:17px; letter-spacing:-0.01em; color:var(--white); }
+.nav-desktop{ display:flex; align-items:center; gap:clamp(14px,2vw,26px); }
+.nav-desktop a{ font-family:var(--font-body); font-weight:600; font-size:15px; color:var(--white); }
+.nav-desktop a:hover{ color:var(--accent); }
+.header-actions{ display:flex; align-items:center; gap:var(--space-3); }
+.nav-toggle{
+  display:none; background:none; border:none; padding:8px; cursor:pointer; color:var(--white);
+}
+.nav-toggle svg{ display:block; }
+.mobile-menu{
+  display:none; flex-direction:column; gap:2px; background:var(--bg-inverse);
+  border-top:1px solid var(--border-inverse); padding:var(--space-3) clamp(20px,5vw,64px) var(--space-5);
+}
+.mobile-menu a{
+  font-family:var(--font-body); font-weight:600; font-size:16px; color:var(--white);
+  padding:12px 4px; border-bottom:1px solid var(--border-inverse);
+}
+.mobile-menu a:last-of-type{ border-bottom:none; }
+.mobile-menu.is-open{ display:flex; }
+
+@media (max-width:860px){
+  .nav-desktop{ display:none; }
+  .nav-toggle{ display:inline-flex; }
+}
+
+/* ============ Hero ============ */
+.hero{ background:var(--bg-inverse); color:var(--white); padding-block:clamp(48px,7vw,104px) clamp(56px,7vw,96px); }
+.hero-grid{
+  display:grid; grid-template-columns:repeat(auto-fit,minmax(320px,1fr));
+  gap:clamp(32px,5vw,72px); align-items:center;
+}
+.hero-copy{ display:flex; flex-direction:column; gap:var(--space-5); max-width:620px; }
+.hero-copy h1{
+  font-weight:800; font-size:clamp(38px,6.2vw,68px); line-height:1.04;
+  letter-spacing:-0.03em; text-wrap:pretty;
+}
+.hero-copy .lead{ font-size:clamp(16px,1.6vw,19px); line-height:1.6; color:var(--gray-200); max-width:520px; text-wrap:pretty; }
+.hero-actions{ display:flex; flex-wrap:wrap; gap:var(--space-3); padding-top:var(--space-2); }
+.hero-stats{
+  display:flex; flex-wrap:wrap; gap:var(--space-5);
+  padding-top:var(--space-5); margin-top:var(--space-4); border-top:1px solid var(--border-inverse);
+}
+.stat{ display:flex; flex-direction:column; gap:2px; }
+.stat-value{ font-family:var(--font-display); font-weight:800; font-size:26px; color:var(--white); }
+.stat-label{ font-size:13px; color:var(--gray-500); }
+
+.hero-media{ display:flex; flex-direction:column; gap:var(--space-3); }
+.media-placeholder{
+  background:var(--bg-inverse-raised); border:1px dashed #3A3A3A; border-radius:var(--radius-lg);
+  aspect-ratio:4/5; display:flex; flex-direction:column; align-items:center; justify-content:center;
+  gap:10px; padding:var(--space-6); text-align:center;
+}
+.media-placeholder .placeholder-tag{ font-size:11px; font-weight:700; letter-spacing:0.16em; text-transform:uppercase; color:var(--accent); }
+.media-placeholder .placeholder-title{ font-family:var(--font-display); font-weight:700; font-size:18px; color:var(--white); }
+.media-placeholder .placeholder-desc{ font-size:14px; line-height:1.5; color:var(--gray-500); max-width:260px; }
+.media-caption{ font-size:12px; color:var(--gray-500); text-align:center; }
+
+/* ============ Trust section ============ */
+.trust-grid{ display:grid; grid-template-columns:repeat(auto-fit,minmax(240px,1fr)); gap:var(--space-5); margin-top:clamp(32px,4vw,56px); }
+.trust-card{
+  display:flex; flex-direction:column; gap:12px; padding:var(--space-6) var(--space-5);
+  background:var(--bg-surface); border-radius:var(--radius-lg); box-shadow:var(--shadow-card);
+}
+.trust-card h3{ font-weight:700; font-size:19px; color:var(--text-primary); }
+.trust-card p{ font-size:15px; line-height:1.6; color:var(--text-secondary); }
+
+/* ============ Catalog ============ */
+.catalog-section{ background:var(--bg-sunken); }
+.catalog-head{ display:flex; flex-wrap:wrap; align-items:flex-end; justify-content:space-between; gap:var(--space-5); }
+.catalog-tabs{ display:flex; flex-wrap:wrap; gap:10px; }
+.tab-link{
+  font-family:var(--font-body); font-weight:600; font-size:14px; color:var(--text-primary);
+  background:var(--white); border:1px solid var(--border-subtle); padding:10px 20px; border-radius:var(--radius-pill);
+  transition:background var(--dur-fast) var(--ease-standard), color var(--dur-fast) var(--ease-standard);
+}
+.tab-link:hover{ background:var(--ink-900); color:var(--white); }
+
+.catalog-group{ display:flex; flex-direction:column; gap:var(--space-5); scroll-margin-top:90px; margin-top:clamp(28px,4vw,48px); }
+.catalog-group-title{ display:flex; align-items:center; gap:var(--space-4); }
+.catalog-group-title h3{ font-weight:700; font-size:20px; }
+.product-grid{ display:flex; flex-wrap:wrap; gap:var(--space-5); }
+
+.product-card{
+  display:flex; flex-direction:column; gap:var(--space-4); background:var(--bg-surface);
+  border-radius:var(--radius-lg); padding:var(--space-5); box-shadow:var(--shadow-card);
+  width:280px; transition:box-shadow var(--dur-base) var(--ease-standard), transform var(--dur-base) var(--ease-standard);
+}
+.product-card:hover{ box-shadow:var(--shadow-card-hover); transform:translateY(-2px); }
+.product-condition{ font-size:var(--fs-micro); font-weight:600; color:var(--accent-hover); text-transform:uppercase; letter-spacing:0.04em; }
+.product-title{ font-weight:700; font-size:22px; line-height:1.3; }
+.product-image{
+  background:var(--bg-sunken); border-radius:var(--radius-md); aspect-ratio:1/1;
+  display:flex; align-items:center; justify-content:center; overflow:hidden;
+}
+.product-image span{ font-size:var(--fs-small); color:var(--text-secondary); }
+.price-block{ display:flex; flex-direction:column; gap:2px; }
+.price-original{ font-size:16px; color:var(--text-strike); text-decoration:line-through; }
+.price-current{ font-family:var(--font-display); font-size:var(--fs-price); font-weight:800; color:var(--text-primary); }
+.tag-row{ display:flex; flex-direction:column; gap:8px; }
+.tag{ display:flex; align-items:center; gap:8px; font-size:var(--fs-small); }
+.tag svg{ flex-shrink:0; }
+.tag-installment{
+  background:var(--bg-sunken); border:1px solid var(--border-subtle); border-radius:var(--radius-sm);
+  padding:10px 14px; font-weight:600; color:var(--accent-hover);
+}
+.tag-discount{ font-weight:500; color:var(--text-secondary); }
+
+.custom-request-card{
+  width:280px; display:flex; flex-direction:column; justify-content:center; gap:var(--space-4);
+  padding:var(--space-6) var(--space-5); background:var(--ink-900); border-radius:var(--radius-lg);
+}
+.custom-request-card h4{ font-weight:800; font-size:22px; line-height:1.2; color:var(--white); }
+.custom-request-card p{ font-size:15px; line-height:1.6; color:var(--gray-500); }
+
+.catalog-note{ font-size:13px; color:var(--text-secondary); margin-top:var(--space-4); }
+
+/* ============ Process ============ */
+.process-section{ background:var(--bg-inverse); color:var(--white); }
+.process-grid{ display:grid; grid-template-columns:repeat(auto-fit,minmax(230px,1fr)); gap:var(--space-6); margin-top:clamp(32px,4vw,56px); }
+.process-step{ display:flex; flex-direction:column; gap:12px; padding-top:var(--space-4); border-top:2px solid var(--border-inverse); }
+.process-step.is-first{ border-top-color:var(--accent); }
+.process-step .num{ font-family:var(--font-display); font-weight:800; font-size:15px; color:var(--accent); }
+.process-step h3{ font-weight:700; font-size:20px; color:var(--white); }
+.process-step p{ font-size:15px; line-height:1.6; color:var(--gray-500); }
+
+/* ============ Testimonials ============ */
+.testimonial-grid{ display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:var(--space-5); margin-top:clamp(28px,4vw,48px); }
+.testimonial-card{
+  display:flex; flex-direction:column; gap:var(--space-5); margin:0; padding:var(--space-6);
+  background:var(--bg-surface); border:1px dashed var(--border-subtle); border-radius:var(--radius-lg);
+}
+.testimonial-card blockquote{
+  margin:0; font-family:var(--font-display); font-weight:700; font-size:19px; line-height:1.45;
+  color:var(--text-primary); text-wrap:pretty;
+}
+.testimonial-figcaption{ display:flex; align-items:center; gap:12px; }
+.avatar-placeholder{
+  width:44px; height:44px; border-radius:var(--radius-pill); background:var(--bg-sunken);
+  display:flex; align-items:center; justify-content:center; font-size:10px; color:var(--text-secondary); flex-shrink:0;
+}
+.testimonial-who{ display:flex; flex-direction:column; }
+.testimonial-name{ font-weight:600; font-size:15px; color:var(--text-primary); }
+.testimonial-meta{ font-size:13px; color:var(--text-secondary); }
+
+/* ============ FAQ ============ */
+.faq-section{ background:var(--bg-sunken); }
+.faq-list{ display:flex; flex-direction:column; gap:var(--space-3); margin-top:clamp(28px,4vw,48px); max-width:1000px; }
+.faq-item{ background:var(--white); border-radius:var(--radius-md); padding:var(--space-5); }
+.faq-item summary{
+  display:flex; align-items:center; justify-content:space-between; gap:var(--space-4); cursor:pointer;
+  list-style:none; font-family:var(--font-display); font-weight:700; font-size:18px; color:var(--text-primary);
+}
+.faq-item summary::-webkit-details-marker{ display:none; }
+.faq-plus{ font-weight:400; font-size:24px; color:var(--accent); transition:transform 200ms var(--ease-standard); flex-shrink:0; }
+.faq-item[open] .faq-plus{ transform:rotate(45deg); }
+.faq-item p{ font-size:16px; line-height:1.65; color:var(--text-secondary); margin-top:var(--space-4); max-width:70ch; }
+
+/* ============ Contact ============ */
+.contact-grid{ display:grid; grid-template-columns:repeat(auto-fit,minmax(320px,1fr)); gap:clamp(32px,5vw,64px); align-items:start; }
+.contact-copy{ display:flex; flex-direction:column; gap:var(--space-5); }
+.contact-copy h2{ font-weight:800; font-size:clamp(28px,4vw,44px); line-height:1.1; letter-spacing:-0.02em; text-wrap:pretty; }
+.contact-copy .lead{ font-size:17px; line-height:1.65; color:var(--text-secondary); max-width:46ch; }
+.contact-meta{ display:flex; flex-direction:column; gap:8px; padding-top:var(--space-4); border-top:1px solid var(--border-subtle); }
+.contact-meta span{ font-size:15px; color:var(--text-secondary); }
+
+.contact-form{ display:flex; flex-direction:column; gap:var(--space-4); background:var(--bg-sunken); padding:clamp(24px,3vw,40px); border-radius:var(--radius-lg); }
+.form-field{ display:flex; flex-direction:column; gap:8px; font-size:14px; font-weight:600; color:var(--text-primary); }
+.form-field input, .form-field select, .form-field textarea{
+  font-family:var(--font-body); font-size:16px; padding:14px 16px; border:1px solid var(--border-subtle);
+  border-radius:var(--radius-sm); background:var(--white); color:var(--text-primary); min-height:48px;
+}
+.form-field textarea{ resize:vertical; min-height:96px; }
+.form-note{ font-size:13px; color:var(--text-secondary); }
+
+/* ============ Footer ============ */
+.site-footer{ background:var(--bg-inverse); color:var(--white); padding-block:clamp(48px,6vw,80px) var(--space-6); }
+.footer-grid{ display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:var(--space-6); }
+.footer-brand{ display:flex; flex-direction:column; gap:var(--space-4); max-width:320px; }
+.footer-brand img{ height:56px; width:auto; border-radius:8px; }
+.footer-brand p{ font-size:15px; line-height:1.6; color:var(--gray-500); }
+.footer-col{ display:flex; flex-direction:column; gap:12px; }
+.footer-col span.col-title{ font-family:var(--font-display); font-weight:700; font-size:15px; color:var(--white); }
+.footer-col a, .footer-col span{ font-size:15px; color:var(--gray-500); }
+.footer-col a:hover{ color:var(--accent); }
+.footer-bottom{
+  display:flex; flex-wrap:wrap; gap:var(--space-4); justify-content:space-between;
+  padding-top:var(--space-5); margin-top:clamp(32px,4vw,56px); border-top:1px solid var(--border-inverse);
+}
+.footer-bottom span{ font-size:13px; color:var(--gray-500); }
+
+@media print{
+  .site-header, .nav-toggle{ display:none; }
+}
+</style>
+</head>
+<body>
+
+<!-- ============ Header ============ -->
+<header class="site-header">
+  <div class="container header-row">
+    <a href="#inicio" class="brand">
+      <img src="assets/logo-icon-black.png" alt="Tecnophone Market">
+      <span class="brand-name">Tecnophone Market</span>
+    </a>
+    <nav class="nav-desktop" aria-label="Navegación principal">
+      <a href="#catalogo">Catálogo</a>
+      <a href="#garantia">Garantía</a>
+      <a href="#proceso">Cómo comprar</a>
+      <a href="#faq">Preguntas</a>
+    </nav>
+    <div class="header-actions">
+      <a href="#contacto" class="btn btn-primary btn-sm">Escribinos</a>
+      <button class="nav-toggle" id="navToggle" aria-expanded="false" aria-controls="mobileMenu" aria-label="Abrir menú">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="4" y1="7" x2="20" y2="7"></line><line x1="4" y1="12" x2="20" y2="12"></line><line x1="4" y1="17" x2="20" y2="17"></line></svg>
+      </button>
+    </div>
+  </div>
+  <nav class="mobile-menu" id="mobileMenu" aria-label="Navegación móvil">
+    <a href="#catalogo">Catálogo</a>
+    <a href="#garantia">Garantía</a>
+    <a href="#proceso">Cómo comprar</a>
+    <a href="#faq">Preguntas</a>
+    <a href="#contacto">Escribinos</a>
+  </nav>
+</header>
+
+<main>
+
+<!-- ============ Hero ============ -->
+<section id="inicio" class="hero">
+  <div class="container hero-grid">
+    <div class="hero-copy">
+      <span class="eyebrow on-dark">iPhones seleccionados · Nuevos y usados</span>
+      <h1>El iPhone que querías,<br>revisado equipo por equipo.</h1>
+      <p class="lead">Cada celular pasa por un control de 32 puntos: batería, pantalla, cámaras y señal. Te decimos exactamente en qué estado está y lo respaldamos con 60 días de garantía.</p>
+      <div class="hero-actions">
+        <a href="#catalogo" class="btn btn-primary">Ver equipos disponibles</a>
+        <a href="#" class="btn btn-outline-dark js-whatsapp-link">Consultar por WhatsApp</a>
+      </div>
+      <div class="hero-stats">
+        <div class="stat"><span class="stat-value">60 días</span><span class="stat-label">de garantía escrita</span></div>
+        <div class="stat"><span class="stat-value">32 puntos</span><span class="stat-label">de revisión técnica</span></div>
+        <div class="stat"><span class="stat-value">85%+</span><span class="stat-label">de salud de batería mínima</span></div>
+      </div>
+    </div>
+    <div class="hero-media">
+      <div class="media-placeholder">
+        <span class="placeholder-tag">Placeholder</span>
+        <span class="placeholder-title">Foto hero del producto</span>
+        <span class="placeholder-desc">iPhone en vertical, fondo neutro oscuro, luz suave lateral. Vertical 4:5.</span>
+      </div>
+      <span class="media-caption">Reemplazar por foto propia del equipo en stock.</span>
+    </div>
+  </div>
+</section>
+
+<!-- ============ Trust / Warranty ============ -->
+<section id="garantia" class="section">
+  <div class="container">
+    <div class="section-head">
+      <span class="eyebrow">Por qué comprarnos</span>
+      <h2>Un usado sin sorpresas se parece bastante a un nuevo.</h2>
+    </div>
+    <div class="trust-grid">
+      <div class="trust-card">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#0F6B63" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l7 3v6c0 4.2-2.9 7.4-7 9-4.1-1.6-7-4.8-7-9V6l7-3z"></path><path d="M9 12l2 2 4-4"></path></svg>
+        <h3>Garantía de 60 días</h3>
+        <p>Por escrito, sobre todos los equipos originales. Si algo falla, lo resolvemos nosotros.</p>
+      </div>
+      <div class="trust-card">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#0F6B63" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="3" width="12" height="18" rx="3"></rect><path d="M9 8h6v6H9z"></path></svg>
+        <h3>Estado real informado</h3>
+        <p>Salud de batería, marcas de uso y ciclos: te los mostramos antes de que compres.</p>
+      </div>
+      <div class="trust-card">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#0F6B63" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7h11v8H3z"></path><path d="M14 10h4l3 3v2h-7z"></path><circle cx="7" cy="17" r="2"></circle><circle cx="17" cy="17" r="2"></circle></svg>
+        <h3>Envío a todo el país</h3>
+        <p>Embalaje protegido y seguimiento. En CABA y GBA coordinamos entrega en el día.</p>
+      </div>
+      <div class="trust-card">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#0F6B63" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 10-3.4 7L21 20l-1-3.2A8.9 8.9 0 0021 12z"></path><path d="M8.5 12h.01M12 12h.01M15.5 12h.01"></path></svg>
+        <h3>Soporte post-venta</h3>
+        <p>Te acompañamos con la configuración, el traspaso de datos y cualquier duda después.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ Catalog ============ -->
+<section id="catalogo" class="section catalog-section">
+  <div class="container">
+    <div class="catalog-head">
+      <div class="section-head">
+        <span class="eyebrow">Catálogo</span>
+        <h2>Equipos en stock esta semana</h2>
+      </div>
+      <div class="catalog-tabs">
+        <a href="#usados" class="tab-link">iPhones usados</a>
+        <a href="#nuevos" class="tab-link">iPhones nuevos</a>
+        <a href="#otras" class="tab-link">Otras marcas</a>
+      </div>
+    </div>
+
+    <div id="usados" class="catalog-group">
+      <div class="catalog-group-title"><h3>iPhones usados seleccionados</h3><div class="divider"></div></div>
+      <div class="product-grid">
+
+        <article class="product-card">
+          <div><span class="product-condition">Usado · Batería 91%</span><h3 class="product-title">iPhone 12 128GB</h3></div>
+          <div class="product-image"><span>Foto del producto</span></div>
+          <div class="price-block"><span class="price-original">$ 649.990,00</span><span class="price-current">$ 579.990,00</span></div>
+          <div class="tag-row">
+            <div class="tag tag-installment"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"></rect><line x1="2" y1="10" x2="22" y2="10"></line></svg>Hasta 6 cuotas sin interés</div>
+            <div class="tag tag-discount"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="5" x2="5" y2="19"></line><circle cx="6.5" cy="6.5" r="2.5"></circle><circle cx="17.5" cy="17.5" r="2.5"></circle></svg>10% off pagando en efectivo</div>
+          </div>
+          <button type="button" class="btn btn-primary btn-block js-buy" data-product="iPhone 12 128GB (usado)">Comprar</button>
+        </article>
+
+        <article class="product-card">
+          <div><span class="product-condition">Usado · Batería 88%</span><h3 class="product-title">iPhone 13 128GB</h3></div>
+          <div class="product-image"><span>Foto del producto</span></div>
+          <div class="price-block"><span class="price-original">$ 899.990,00</span><span class="price-current">$ 819.990,00</span></div>
+          <div class="tag-row">
+            <div class="tag tag-installment"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"></rect><line x1="2" y1="10" x2="22" y2="10"></line></svg>Hasta 6 cuotas sin interés</div>
+            <div class="tag tag-discount"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="5" x2="5" y2="19"></line><circle cx="6.5" cy="6.5" r="2.5"></circle><circle cx="17.5" cy="17.5" r="2.5"></circle></svg>10% off pagando en efectivo</div>
+          </div>
+          <button type="button" class="btn btn-primary btn-block js-buy" data-product="iPhone 13 128GB (usado)">Comprar</button>
+        </article>
+
+        <article class="product-card">
+          <div><span class="product-condition">Usado · Batería 94%</span><h3 class="product-title">iPhone 14 Pro 256GB</h3></div>
+          <div class="product-image"><span>Foto del producto</span></div>
+          <div class="price-block"><span class="price-original">$ 1.399.990,00</span><span class="price-current">$ 1.249.990,00</span></div>
+          <div class="tag-row">
+            <div class="tag tag-installment"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"></rect><line x1="2" y1="10" x2="22" y2="10"></line></svg>Hasta 12 cuotas fijas</div>
+            <div class="tag tag-discount"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="5" x2="5" y2="19"></line><circle cx="6.5" cy="6.5" r="2.5"></circle><circle cx="17.5" cy="17.5" r="2.5"></circle></svg>10% off pagando en efectivo</div>
+          </div>
+          <button type="button" class="btn btn-primary btn-block js-buy" data-product="iPhone 14 Pro 256GB (usado)">Comprar</button>
+        </article>
+
+        <article class="product-card">
+          <div><span class="product-condition">Usado · Batería 100%</span><h3 class="product-title">iPhone 15 128GB</h3></div>
+          <div class="product-image"><span>Foto del producto</span></div>
+          <div class="price-block"><span class="price-original">$ 1.549.990,00</span><span class="price-current">$ 1.429.990,00</span></div>
+          <div class="tag-row">
+            <div class="tag tag-installment"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"></rect><line x1="2" y1="10" x2="22" y2="10"></line></svg>Hasta 12 cuotas fijas</div>
+            <div class="tag tag-discount"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="5" x2="5" y2="19"></line><circle cx="6.5" cy="6.5" r="2.5"></circle><circle cx="17.5" cy="17.5" r="2.5"></circle></svg>10% off pagando en efectivo</div>
+          </div>
+          <button type="button" class="btn btn-primary btn-block js-buy" data-product="iPhone 15 128GB (usado)">Comprar</button>
+        </article>
+
+      </div>
+    </div>
+
+    <div id="nuevos" class="catalog-group">
+      <div class="catalog-group-title"><h3>iPhones nuevos sellados</h3><div class="divider"></div></div>
+      <div class="product-grid">
+
+        <article class="product-card">
+          <div><span class="product-condition">Nuevo · Sellado</span><h3 class="product-title">iPhone 16 128GB</h3></div>
+          <div class="product-image"><span>Foto del producto</span></div>
+          <div class="price-block"><span class="price-original">$ 1.999.990,00</span><span class="price-current">$ 1.859.990,00</span></div>
+          <div class="tag-row">
+            <div class="tag tag-installment"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"></rect><line x1="2" y1="10" x2="22" y2="10"></line></svg>Hasta 12 cuotas fijas</div>
+            <div class="tag tag-discount"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="5" x2="5" y2="19"></line><circle cx="6.5" cy="6.5" r="2.5"></circle><circle cx="17.5" cy="17.5" r="2.5"></circle></svg>10% off pagando en efectivo</div>
+          </div>
+          <button type="button" class="btn btn-primary btn-block js-buy" data-product="iPhone 16 128GB (nuevo)">Comprar</button>
+        </article>
+
+        <article class="product-card">
+          <div><span class="product-condition">Nuevo · Sellado</span><h3 class="product-title">iPhone 16 Pro 256GB</h3></div>
+          <div class="product-image"><span>Foto del producto</span></div>
+          <div class="price-block"><span class="price-original">$ 2.749.990,00</span><span class="price-current">$ 2.589.990,00</span></div>
+          <div class="tag-row">
+            <div class="tag tag-installment"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"></rect><line x1="2" y1="10" x2="22" y2="10"></line></svg>Hasta 12 cuotas fijas</div>
+            <div class="tag tag-discount"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="5" x2="5" y2="19"></line><circle cx="6.5" cy="6.5" r="2.5"></circle><circle cx="17.5" cy="17.5" r="2.5"></circle></svg>10% off pagando en efectivo</div>
+          </div>
+          <button type="button" class="btn btn-primary btn-block js-buy" data-product="iPhone 16 Pro 256GB (nuevo)">Comprar</button>
+        </article>
+
+        <div class="custom-request-card">
+          <h4>¿No ves el modelo que buscás?</h4>
+          <p>Conseguimos casi cualquier equipo por pedido, con el mismo control y la misma garantía.</p>
+          <a href="#contacto" class="btn btn-primary btn-sm">Pedir un modelo</a>
+        </div>
+
+      </div>
+    </div>
+
+    <div id="otras" class="catalog-group">
+      <div class="catalog-group-title"><h3>Otras marcas</h3><div class="divider"></div></div>
+      <div class="product-grid">
+
+        <article class="product-card">
+          <div><span class="product-condition">Nuevo · Sellado</span><h3 class="product-title">Samsung Galaxy S24</h3></div>
+          <div class="product-image"><span>Foto del producto</span></div>
+          <div class="price-block"><span class="price-original">$ 1.299.990,00</span><span class="price-current">$ 1.179.990,00</span></div>
+          <div class="tag-row">
+            <div class="tag tag-installment"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"></rect><line x1="2" y1="10" x2="22" y2="10"></line></svg>Hasta 12 cuotas fijas</div>
+            <div class="tag tag-discount"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="5" x2="5" y2="19"></line><circle cx="6.5" cy="6.5" r="2.5"></circle><circle cx="17.5" cy="17.5" r="2.5"></circle></svg>10% off pagando en efectivo</div>
+          </div>
+          <button type="button" class="btn btn-primary btn-block js-buy" data-product="Samsung Galaxy S24">Comprar</button>
+        </article>
+
+        <article class="product-card">
+          <div><span class="product-condition">Nuevo · Sellado</span><h3 class="product-title">Xiaomi Redmi Note 14</h3></div>
+          <div class="product-image"><span>Foto del producto</span></div>
+          <div class="price-block"><span class="price-original">$ 549.990,00</span><span class="price-current">$ 489.990,00</span></div>
+          <div class="tag-row">
+            <div class="tag tag-installment"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"></rect><line x1="2" y1="10" x2="22" y2="10"></line></svg>Hasta 6 cuotas sin interés</div>
+            <div class="tag tag-discount"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="5" x2="5" y2="19"></line><circle cx="6.5" cy="6.5" r="2.5"></circle><circle cx="17.5" cy="17.5" r="2.5"></circle></svg>10% off pagando en efectivo</div>
+          </div>
+          <button type="button" class="btn btn-primary btn-block js-buy" data-product="Xiaomi Redmi Note 14">Comprar</button>
+        </article>
+
+        <article class="product-card">
+          <div><span class="product-condition">Usado · Batería 92%</span><h3 class="product-title">Samsung Galaxy S23</h3></div>
+          <div class="product-image"><span>Foto del producto</span></div>
+          <div class="price-block"><span class="price-original">$ 899.990,00</span><span class="price-current">$ 789.990,00</span></div>
+          <div class="tag-row">
+            <div class="tag tag-installment"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"></rect><line x1="2" y1="10" x2="22" y2="10"></line></svg>Hasta 6 cuotas sin interés</div>
+            <div class="tag tag-discount"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="5" x2="5" y2="19"></line><circle cx="6.5" cy="6.5" r="2.5"></circle><circle cx="17.5" cy="17.5" r="2.5"></circle></svg>10% off pagando en efectivo</div>
+          </div>
+          <button type="button" class="btn btn-primary btn-block js-buy" data-product="Samsung Galaxy S23 (usado)">Comprar</button>
+        </article>
+
+      </div>
+      <p class="catalog-note">Precios y stock de referencia — reemplazar por el listado real antes de publicar.</p>
+    </div>
+
+  </div>
+</section>
+
+<!-- ============ Process ============ -->
+<section id="proceso" class="section process-section">
+  <div class="container">
+    <div class="section-head">
+      <span class="eyebrow on-dark">Cómo comprar</span>
+      <h2>Cuatro pasos, sin vueltas.</h2>
+    </div>
+    <div class="process-grid">
+      <div class="process-step is-first"><span class="num">01</span><h3>Nos escribís</h3><p>Contanos qué usás hoy y qué presupuesto tenés. Te recomendamos 2 o 3 opciones concretas.</p></div>
+      <div class="process-step"><span class="num">02</span><h3>Ves el equipo real</h3><p>Fotos y video del equipo exacto, con el informe de batería y estado a la vista.</p></div>
+      <div class="process-step"><span class="num">03</span><h3>Elegís cómo pagar</h3><p>Efectivo con descuento, transferencia o cuotas con tarjeta. Sin costos escondidos.</p></div>
+      <div class="process-step"><span class="num">04</span><h3>Lo recibís listo</h3><p>Entrega en mano o envío con seguimiento, con la garantía escrita en la caja.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ Testimonials ============ -->
+<section class="section">
+  <div class="container">
+    <div class="section-head">
+      <span class="eyebrow">Testimonios</span>
+      <h2>Lo que dicen quienes ya compraron</h2>
+    </div>
+    <div class="testimonial-grid">
+      <figure class="testimonial-card">
+        <span class="eyebrow">Placeholder</span>
+        <blockquote>Acá va el testimonio real del cliente, entre 20 y 35 palabras, mencionando el modelo que compró y qué lo tranquilizó de la compra.</blockquote>
+        <figcaption class="testimonial-figcaption">
+          <div class="avatar-placeholder">Foto</div>
+          <div class="testimonial-who"><span class="testimonial-name">Nombre del cliente</span><span class="testimonial-meta">Modelo comprado · Ciudad</span></div>
+        </figcaption>
+      </figure>
+      <figure class="testimonial-card">
+        <span class="eyebrow">Placeholder</span>
+        <blockquote>Segundo testimonio. Ideal si habla del asesoramiento previo a la compra o de la rapidez de la entrega.</blockquote>
+        <figcaption class="testimonial-figcaption">
+          <div class="avatar-placeholder">Foto</div>
+          <div class="testimonial-who"><span class="testimonial-name">Nombre del cliente</span><span class="testimonial-meta">Modelo comprado · Ciudad</span></div>
+        </figcaption>
+      </figure>
+      <figure class="testimonial-card">
+        <span class="eyebrow">Placeholder</span>
+        <blockquote>Tercer testimonio. Sirve uno de alguien que usó la garantía y quedó conforme con la respuesta.</blockquote>
+        <figcaption class="testimonial-figcaption">
+          <div class="avatar-placeholder">Foto</div>
+          <div class="testimonial-who"><span class="testimonial-name">Nombre del cliente</span><span class="testimonial-meta">Modelo comprado · Ciudad</span></div>
+        </figcaption>
+      </figure>
+    </div>
+  </div>
+</section>
+
+<!-- ============ FAQ ============ -->
+<section id="faq" class="section faq-section">
+  <div class="container">
+    <div class="section-head">
+      <span class="eyebrow">Preguntas frecuentes</span>
+      <h2>Todo lo que suelen preguntarnos</h2>
+    </div>
+    <div class="faq-list">
+      <details class="faq-item" open>
+        <summary>¿Qué cubre la garantía de 60 días?<span class="faq-plus">+</span></summary>
+        <p>Cubre cualquier falla de funcionamiento del equipo: batería, pantalla, cámaras, señal, carga y software. No cubre daños por golpes, humedad ni intervenciones de terceros posteriores a la entrega.</p>
+      </details>
+      <details class="faq-item">
+        <summary>¿Puedo devolver el equipo si no me convence?<span class="faq-plus">+</span></summary>
+        <p>Sí. Tenés 10 días corridos desde la entrega para devolverlo en las mismas condiciones y recuperar tu dinero o cambiarlo por otro modelo.</p>
+      </details>
+      <details class="faq-item">
+        <summary>¿Qué formas de pago aceptan?<span class="faq-plus">+</span></summary>
+        <p>Efectivo y transferencia con 10% de descuento, tarjeta de débito, y tarjeta de crédito en hasta 12 cuotas fijas (6 sin interés en modelos seleccionados).</p>
+      </details>
+      <details class="faq-item">
+        <summary>¿Cómo sé el estado real de un usado?<span class="faq-plus">+</span></summary>
+        <p>Cada equipo se publica con su salud de batería, cantidad de ciclos, marcas de uso y fotos del equipo exacto que vas a recibir. Nada de fotos genéricas.</p>
+      </details>
+      <details class="faq-item">
+        <summary>¿Toman mi equipo usado como parte de pago?<span class="faq-plus">+</span></summary>
+        <p>Sí, según modelo y estado. Escribinos con el modelo, el almacenamiento y la salud de batería y te cotizamos el equipo el mismo día.</p>
+      </details>
+      <details class="faq-item">
+        <summary>¿Hacen envíos al interior?<span class="faq-plus">+</span></summary>
+        <p>Sí, a todo el país con seguimiento. El equipo viaja asegurado y te enviamos el código de envío en cuanto sale.</p>
+      </details>
+    </div>
+  </div>
+</section>
+
+<!-- ============ Contact ============ -->
+<section id="contacto" class="section">
+  <div class="container contact-grid">
+    <div class="contact-copy">
+      <span class="eyebrow">Contacto</span>
+      <h2>Contanos qué buscás y te respondemos hoy.</h2>
+      <p class="lead">Atendemos de lunes a sábado, de 10 a 19 h. Si preferís, escribinos directo por WhatsApp: es la vía más rápida.</p>
+      <a href="#" target="_blank" rel="noopener" class="btn btn-primary js-whatsapp-link" style="align-self:flex-start">Escribir por WhatsApp</a>
+      <div class="contact-meta">
+        <span>También podés escribirnos a <a href="mailto:hola@tecnophonemarket.com">hola@tecnophonemarket.com</a></span>
+        <span>Local a la calle · Reemplazar por dirección real</span>
+      </div>
+    </div>
+    <form class="contact-form" id="contactForm" novalidate>
+      <label class="form-field">Nombre
+        <input type="text" name="nombre" placeholder="Tu nombre" required>
+      </label>
+      <label class="form-field">WhatsApp o email
+        <input type="text" name="contacto" placeholder="Cómo te contactamos" required>
+      </label>
+      <label class="form-field">Qué equipo buscás
+        <select name="interes">
+          <option>iPhone usado seleccionado</option>
+          <option>iPhone nuevo sellado</option>
+          <option>Otra marca (Samsung, Xiaomi…)</option>
+          <option>Quiero entregar mi usado como parte de pago</option>
+          <option>Todavía no sé, quiero asesoramiento</option>
+        </select>
+      </label>
+      <label class="form-field">Mensaje
+        <textarea name="mensaje" rows="4" placeholder="Modelo, almacenamiento, presupuesto…"></textarea>
+      </label>
+      <button type="submit" class="btn btn-dark">Enviar consulta</button>
+      <span class="form-note">Te respondemos el mismo día hábil. Conectar el formulario a tu email o CRM antes de publicar.</span>
+    </form>
+  </div>
+</section>
+
+</main>
+
+<!-- ============ Footer ============ -->
+<footer class="site-footer">
+  <div class="container">
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <img src="assets/logo-full-black.png" alt="Tecnophone Market">
+        <p>Venta de iPhones nuevos y usados seleccionados, con revisión técnica, garantía de 60 días y asesoramiento cercano.</p>
+      </div>
+      <div class="footer-col">
+        <span class="col-title">Catálogo</span>
+        <a href="#usados">iPhones usados</a>
+        <a href="#nuevos">iPhones nuevos</a>
+        <a href="#otras">Otras marcas</a>
+      </div>
+      <div class="footer-col">
+        <span class="col-title">Comprar</span>
+        <a href="#garantia">Garantía y estado</a>
+        <a href="#proceso">Cómo comprar</a>
+        <a href="#faq">Preguntas frecuentes</a>
+      </div>
+      <div class="footer-col">
+        <span class="col-title">Contacto</span>
+        <a href="#" target="_blank" rel="noopener" class="js-whatsapp-link">WhatsApp</a>
+        <span><a href="mailto:hola@tecnophonemarket.com">hola@tecnophonemarket.com</a></span>
+        <span>Lun a sáb · 10 a 19 h</span>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>© <span id="year"></span> Tecnophone Market. Todos los derechos reservados.</span>
+      <span>Los equipos usados son reacondicionados y no provienen de Apple Inc.</span>
+    </div>
+  </div>
+</footer>
+
+<script>
+(function(){
+  "use strict";
+
+  /* ---- Site config: edit these before publishing ---- */
+  var CONFIG = {
+    whatsappPhone: "5493794789660", // reemplazar por el número real, solo dígitos con código de país
+    whatsappMessage: "Hola! Quiero consultar por un equipo."
+  };
+
+  function buildWhatsappUrl(message){
+    var phone = CONFIG.whatsappPhone.replace(/[^0-9]/g, "");
+    return "https://wa.me/" + phone + "?text=" + encodeURIComponent(message || CONFIG.whatsappMessage);
+  }
+
+  document.querySelectorAll(".js-whatsapp-link").forEach(function(link){
+    link.href = buildWhatsappUrl();
+  });
+
+  /* ---- "Comprar" buttons: prefill WhatsApp with the product name ---- */
+  document.querySelectorAll(".js-buy").forEach(function(btn){
+    btn.addEventListener("click", function(){
+      var product = btn.getAttribute("data-product") || "";
+      var msg = "Hola! Quiero consultar por: " + product + ".";
+      window.open(buildWhatsappUrl(msg), "_blank", "noopener");
+    });
+  });
+
+  /* ---- Mobile nav toggle ---- */
+  var navToggle = document.getElementById("navToggle");
+  var mobileMenu = document.getElementById("mobileMenu");
+  if (navToggle && mobileMenu){
+    navToggle.addEventListener("click", function(){
+      var isOpen = mobileMenu.classList.toggle("is-open");
+      navToggle.setAttribute("aria-expanded", isOpen ? "true" : "false");
+    });
+    mobileMenu.querySelectorAll("a").forEach(function(a){
+      a.addEventListener("click", function(){
+        mobileMenu.classList.remove("is-open");
+        navToggle.setAttribute("aria-expanded", "false");
+      });
+    });
+  }
+
+  /* ---- Contact form: front-end only feedback (connect to a real backend before publishing) ---- */
+  var form = document.getElementById("contactForm");
+  if (form){
+    form.addEventListener("submit", function(e){
+      e.preventDefault();
+      var btn = form.querySelector('button[type="submit"]');
+      if (btn){
+        btn.textContent = "Consulta enviada ✓";
+        btn.disabled = true;
+      }
+    });
+  }
+
+  /* ---- Footer year ---- */
+  var yearEl = document.getElementById("year");
+  if (yearEl) yearEl.textContent = String(new Date().getFullYear());
+
+})();
+</script>
+</body>
+</html>
