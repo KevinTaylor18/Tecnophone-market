@@ -655,7 +655,7 @@ button{ font-family:inherit; }
         <span>Local a la calle · Reemplazar por dirección real</span>
       </div>
     </div>
-    <form class="contact-form" id="contactForm" novalidate>
+    <form class="contact-form" id="contactForm" action="https://formspree.io/f/xnpqzgay" method="POST" novalidate>
       <label class="form-field">Nombre
         <input type="text" name="nombre" placeholder="Tu nombre" required>
       </label>
@@ -674,8 +674,10 @@ button{ font-family:inherit; }
       <label class="form-field">Mensaje
         <textarea name="mensaje" rows="4" placeholder="Modelo, almacenamiento, presupuesto…"></textarea>
       </label>
+      <input type="hidden" name="_subject" value="Nueva consulta — Tecnophone Market">
+      <input type="text" name="_gotcha" style="display:none" tabindex="-1" autocomplete="off">
       <button type="submit" class="btn btn-dark">Enviar consulta</button>
-      <span class="form-note">Te respondemos el mismo día hábil. Conectar el formulario a tu email o CRM antes de publicar.</span>
+      <span class="form-note" id="formNote">Te respondemos el mismo día hábil.</span>
     </form>
   </div>
 </section>
@@ -760,16 +762,40 @@ button{ font-family:inherit; }
     });
   }
 
-  /* ---- Contact form: front-end only feedback (connect to a real backend before publishing) ---- */
+  /* ---- Contact form: submits to Formspree (https://formspree.io/f/xnpqzgay) via fetch ---- */
   var form = document.getElementById("contactForm");
   if (form){
+    var noteEl = document.getElementById("formNote");
+    var noteDefault = noteEl ? noteEl.textContent : "";
     form.addEventListener("submit", function(e){
       e.preventDefault();
       var btn = form.querySelector('button[type="submit"]');
-      if (btn){
-        btn.textContent = "Consulta enviada ✓";
-        btn.disabled = true;
-      }
+      var originalLabel = btn ? btn.textContent : "";
+      if (btn){ btn.disabled = true; btn.textContent = "Enviando…"; }
+      if (noteEl){ noteEl.textContent = noteDefault; }
+
+      fetch(form.action, {
+        method: "POST",
+        body: new FormData(form),
+        headers: { "Accept": "application/json" }
+      }).then(function(res){
+        if (res.ok){
+          if (btn) btn.textContent = "Consulta enviada ✓";
+          form.reset();
+        } else {
+          res.json().then(function(data){
+            var msg = (data && data.errors && data.errors.map(function(er){ return er.message; }).join(", ")) || "";
+            if (noteEl) noteEl.textContent = "No pudimos enviar tu consulta" + (msg ? ": " + msg : ". Probá de nuevo o escribinos por WhatsApp.");
+            if (btn){ btn.disabled = false; btn.textContent = originalLabel; }
+          }).catch(function(){
+            if (noteEl) noteEl.textContent = "No pudimos enviar tu consulta. Probá de nuevo o escribinos por WhatsApp.";
+            if (btn){ btn.disabled = false; btn.textContent = originalLabel; }
+          });
+        }
+      }).catch(function(){
+        if (noteEl) noteEl.textContent = "No pudimos enviar tu consulta. Revisá tu conexión o escribinos por WhatsApp.";
+        if (btn){ btn.disabled = false; btn.textContent = originalLabel; }
+      });
     });
   }
 
