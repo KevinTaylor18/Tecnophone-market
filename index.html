@@ -119,13 +119,13 @@ button{ font-family:inherit; }
   display:flex; align-items:center; justify-content:space-between; gap:var(--space-4);
   padding-block:14px;
 }
-.brand{ display:flex; align-items:center; gap:10px; }
-.brand img{ height:38px; width:auto; border-radius:8px; }
+.brand{ display:flex; align-items:center; gap:10px; min-width:0; }
+.brand img{ height:38px; width:auto; border-radius:8px; flex-shrink:0; }
 .brand-name{ font-family:var(--font-display); font-weight:800; font-size:17px; letter-spacing:-0.01em; color:var(--white); }
 .nav-desktop{ display:flex; align-items:center; gap:clamp(14px,2vw,26px); }
 .nav-desktop a{ font-family:var(--font-body); font-weight:600; font-size:15px; color:var(--white); }
 .nav-desktop a:hover{ color:var(--accent); }
-.header-actions{ display:flex; align-items:center; gap:var(--space-3); }
+.header-actions{ display:flex; align-items:center; gap:var(--space-3); flex-shrink:0; }
 .nav-toggle{
   display:none; background:none; border:none; padding:8px; cursor:pointer; color:var(--white);
 }
@@ -144,6 +144,12 @@ button{ font-family:inherit; }
 @media (max-width:860px){
   .nav-desktop{ display:none; }
   .nav-toggle{ display:inline-flex; }
+}
+@media (max-width:420px){
+  /* "Escribinos" ya está duplicado como último ítem del menú móvil;
+     en pantallas muy angostas chocaba con el nombre de marca. */
+  .header-actions > a.btn{ display:none; }
+  .brand-name{ font-size:15px; }
 }
 
 /* ============ Hero ============ */
