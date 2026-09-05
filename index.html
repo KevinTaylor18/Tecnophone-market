@@ -240,6 +240,8 @@ button{ font-family:inherit; }
 .custom-request-card p{ font-size:15px; line-height:1.6; color:var(--gray-500); }
 
 .catalog-note{ font-size:13px; color:var(--text-secondary); margin-top:var(--space-4); }
+.catalog-loading, .catalog-error{ font-family:var(--font-body); font-size:15px; color:var(--text-secondary); }
+.catalog-error{ color:var(--accent-hover); }
 
 /* ============ Process ============ */
 .process-section{ background:var(--bg-inverse); color:var(--white); }
@@ -428,129 +430,24 @@ button{ font-family:inherit; }
 
     <div id="usados" class="catalog-group">
       <div class="catalog-group-title"><h3>iPhones usados seleccionados</h3><div class="divider"></div></div>
-      <div class="product-grid">
-
-        <article class="product-card">
-          <div><span class="product-condition">Usado · Batería 91%</span><h3 class="product-title">iPhone 12 128GB</h3></div>
-          <div class="product-image"><span>Foto del producto</span></div>
-          <div class="price-block"><span class="price-original">$ 649.990,00</span><span class="price-current">$ 579.990,00</span></div>
-          <div class="tag-row">
-            <div class="tag tag-installment"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"></rect><line x1="2" y1="10" x2="22" y2="10"></line></svg>Hasta 6 cuotas sin interés</div>
-            <div class="tag tag-discount"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="5" x2="5" y2="19"></line><circle cx="6.5" cy="6.5" r="2.5"></circle><circle cx="17.5" cy="17.5" r="2.5"></circle></svg>10% off pagando en efectivo</div>
-          </div>
-          <button type="button" class="btn btn-primary btn-block js-buy" data-product="iPhone 12 128GB (usado)">Comprar</button>
-        </article>
-
-        <article class="product-card">
-          <div><span class="product-condition">Usado · Batería 88%</span><h3 class="product-title">iPhone 13 128GB</h3></div>
-          <div class="product-image"><span>Foto del producto</span></div>
-          <div class="price-block"><span class="price-original">$ 899.990,00</span><span class="price-current">$ 819.990,00</span></div>
-          <div class="tag-row">
-            <div class="tag tag-installment"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"></rect><line x1="2" y1="10" x2="22" y2="10"></line></svg>Hasta 6 cuotas sin interés</div>
-            <div class="tag tag-discount"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="5" x2="5" y2="19"></line><circle cx="6.5" cy="6.5" r="2.5"></circle><circle cx="17.5" cy="17.5" r="2.5"></circle></svg>10% off pagando en efectivo</div>
-          </div>
-          <button type="button" class="btn btn-primary btn-block js-buy" data-product="iPhone 13 128GB (usado)">Comprar</button>
-        </article>
-
-        <article class="product-card">
-          <div><span class="product-condition">Usado · Batería 94%</span><h3 class="product-title">iPhone 14 Pro 256GB</h3></div>
-          <div class="product-image"><span>Foto del producto</span></div>
-          <div class="price-block"><span class="price-original">$ 1.399.990,00</span><span class="price-current">$ 1.249.990,00</span></div>
-          <div class="tag-row">
-            <div class="tag tag-installment"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"></rect><line x1="2" y1="10" x2="22" y2="10"></line></svg>Hasta 12 cuotas fijas</div>
-            <div class="tag tag-discount"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="5" x2="5" y2="19"></line><circle cx="6.5" cy="6.5" r="2.5"></circle><circle cx="17.5" cy="17.5" r="2.5"></circle></svg>10% off pagando en efectivo</div>
-          </div>
-          <button type="button" class="btn btn-primary btn-block js-buy" data-product="iPhone 14 Pro 256GB (usado)">Comprar</button>
-        </article>
-
-        <article class="product-card">
-          <div><span class="product-condition">Usado · Batería 100%</span><h3 class="product-title">iPhone 15 128GB</h3></div>
-          <div class="product-image"><span>Foto del producto</span></div>
-          <div class="price-block"><span class="price-original">$ 1.549.990,00</span><span class="price-current">$ 1.429.990,00</span></div>
-          <div class="tag-row">
-            <div class="tag tag-installment"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"></rect><line x1="2" y1="10" x2="22" y2="10"></line></svg>Hasta 12 cuotas fijas</div>
-            <div class="tag tag-discount"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="5" x2="5" y2="19"></line><circle cx="6.5" cy="6.5" r="2.5"></circle><circle cx="17.5" cy="17.5" r="2.5"></circle></svg>10% off pagando en efectivo</div>
-          </div>
-          <button type="button" class="btn btn-primary btn-block js-buy" data-product="iPhone 15 128GB (usado)">Comprar</button>
-        </article>
-
+      <div class="product-grid" id="grid-usados" data-catalog-grid="usados">
+        <p class="catalog-loading">Cargando catálogo…</p>
       </div>
     </div>
 
     <div id="nuevos" class="catalog-group">
       <div class="catalog-group-title"><h3>iPhones nuevos sellados</h3><div class="divider"></div></div>
-      <div class="product-grid">
-
-        <article class="product-card">
-          <div><span class="product-condition">Nuevo · Sellado</span><h3 class="product-title">iPhone 16 128GB</h3></div>
-          <div class="product-image"><span>Foto del producto</span></div>
-          <div class="price-block"><span class="price-original">$ 1.999.990,00</span><span class="price-current">$ 1.859.990,00</span></div>
-          <div class="tag-row">
-            <div class="tag tag-installment"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"></rect><line x1="2" y1="10" x2="22" y2="10"></line></svg>Hasta 12 cuotas fijas</div>
-            <div class="tag tag-discount"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="5" x2="5" y2="19"></line><circle cx="6.5" cy="6.5" r="2.5"></circle><circle cx="17.5" cy="17.5" r="2.5"></circle></svg>10% off pagando en efectivo</div>
-          </div>
-          <button type="button" class="btn btn-primary btn-block js-buy" data-product="iPhone 16 128GB (nuevo)">Comprar</button>
-        </article>
-
-        <article class="product-card">
-          <div><span class="product-condition">Nuevo · Sellado</span><h3 class="product-title">iPhone 16 Pro 256GB</h3></div>
-          <div class="product-image"><span>Foto del producto</span></div>
-          <div class="price-block"><span class="price-original">$ 2.749.990,00</span><span class="price-current">$ 2.589.990,00</span></div>
-          <div class="tag-row">
-            <div class="tag tag-installment"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"></rect><line x1="2" y1="10" x2="22" y2="10"></line></svg>Hasta 12 cuotas fijas</div>
-            <div class="tag tag-discount"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="5" x2="5" y2="19"></line><circle cx="6.5" cy="6.5" r="2.5"></circle><circle cx="17.5" cy="17.5" r="2.5"></circle></svg>10% off pagando en efectivo</div>
-          </div>
-          <button type="button" class="btn btn-primary btn-block js-buy" data-product="iPhone 16 Pro 256GB (nuevo)">Comprar</button>
-        </article>
-
-        <div class="custom-request-card">
-          <h4>¿No ves el modelo que buscás?</h4>
-          <p>Conseguimos casi cualquier equipo por pedido, con el mismo control y la misma garantía.</p>
-          <a href="#contacto" class="btn btn-primary btn-sm">Pedir un modelo</a>
-        </div>
-
+      <div class="product-grid" id="grid-nuevos" data-catalog-grid="nuevos">
+        <p class="catalog-loading">Cargando catálogo…</p>
       </div>
     </div>
 
     <div id="otras" class="catalog-group">
       <div class="catalog-group-title"><h3>Otras marcas</h3><div class="divider"></div></div>
-      <div class="product-grid">
-
-        <article class="product-card">
-          <div><span class="product-condition">Nuevo · Sellado</span><h3 class="product-title">Samsung Galaxy S24</h3></div>
-          <div class="product-image"><span>Foto del producto</span></div>
-          <div class="price-block"><span class="price-original">$ 1.299.990,00</span><span class="price-current">$ 1.179.990,00</span></div>
-          <div class="tag-row">
-            <div class="tag tag-installment"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"></rect><line x1="2" y1="10" x2="22" y2="10"></line></svg>Hasta 12 cuotas fijas</div>
-            <div class="tag tag-discount"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="5" x2="5" y2="19"></line><circle cx="6.5" cy="6.5" r="2.5"></circle><circle cx="17.5" cy="17.5" r="2.5"></circle></svg>10% off pagando en efectivo</div>
-          </div>
-          <button type="button" class="btn btn-primary btn-block js-buy" data-product="Samsung Galaxy S24">Comprar</button>
-        </article>
-
-        <article class="product-card">
-          <div><span class="product-condition">Nuevo · Sellado</span><h3 class="product-title">Xiaomi Redmi Note 14</h3></div>
-          <div class="product-image"><span>Foto del producto</span></div>
-          <div class="price-block"><span class="price-original">$ 549.990,00</span><span class="price-current">$ 489.990,00</span></div>
-          <div class="tag-row">
-            <div class="tag tag-installment"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"></rect><line x1="2" y1="10" x2="22" y2="10"></line></svg>Hasta 6 cuotas sin interés</div>
-            <div class="tag tag-discount"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="5" x2="5" y2="19"></line><circle cx="6.5" cy="6.5" r="2.5"></circle><circle cx="17.5" cy="17.5" r="2.5"></circle></svg>10% off pagando en efectivo</div>
-          </div>
-          <button type="button" class="btn btn-primary btn-block js-buy" data-product="Xiaomi Redmi Note 14">Comprar</button>
-        </article>
-
-        <article class="product-card">
-          <div><span class="product-condition">Usado · Batería 92%</span><h3 class="product-title">Samsung Galaxy S23</h3></div>
-          <div class="product-image"><span>Foto del producto</span></div>
-          <div class="price-block"><span class="price-original">$ 899.990,00</span><span class="price-current">$ 789.990,00</span></div>
-          <div class="tag-row">
-            <div class="tag tag-installment"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"></rect><line x1="2" y1="10" x2="22" y2="10"></line></svg>Hasta 6 cuotas sin interés</div>
-            <div class="tag tag-discount"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="5" x2="5" y2="19"></line><circle cx="6.5" cy="6.5" r="2.5"></circle><circle cx="17.5" cy="17.5" r="2.5"></circle></svg>10% off pagando en efectivo</div>
-          </div>
-          <button type="button" class="btn btn-primary btn-block js-buy" data-product="Samsung Galaxy S23 (usado)">Comprar</button>
-        </article>
-
+      <div class="product-grid" id="grid-otras" data-catalog-grid="otras">
+        <p class="catalog-loading">Cargando catálogo…</p>
       </div>
-      <p class="catalog-note">Precios y stock de referencia — reemplazar por el listado real antes de publicar.</p>
+      <p class="catalog-note">Precios y stock cargados en vivo desde la base de datos.</p>
     </div>
 
   </div>
@@ -727,7 +624,9 @@ button{ font-family:inherit; }
   /* ---- Site config: edit these before publishing ---- */
   var CONFIG = {
     whatsappPhone: "5493794789660", // reemplazar por el número real, solo dígitos con código de país
-    whatsappMessage: "Hola! Quiero consultar por un equipo."
+    whatsappMessage: "Hola! Quiero consultar por un equipo.",
+    supabaseUrl: "https://vkglwajqvxizxfcqfdsd.supabase.co",
+    supabaseAnonKey: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZrZ2x3YWpxdnhpenhmY3FmZHNkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg2MjEzNzQsImV4cCI6MjEwNDE5NzM3NH0.XlD4R_7giKG7B5XTk5_kMlvg7ueFlKDdACnPuUnMSBY"
   };
 
   function buildWhatsappUrl(message){
@@ -739,14 +638,106 @@ button{ font-family:inherit; }
     link.href = buildWhatsappUrl();
   });
 
-  /* ---- "Comprar" buttons: prefill WhatsApp with the product name ---- */
-  document.querySelectorAll(".js-buy").forEach(function(btn){
-    btn.addEventListener("click", function(){
-      var product = btn.getAttribute("data-product") || "";
-      var msg = "Hola! Quiero consultar por: " + product + ".";
-      window.open(buildWhatsappUrl(msg), "_blank", "noopener");
-    });
+  /* ---- "Comprar" buttons: prefill WhatsApp with the product name ----
+     Delegated on document because the buttons are rendered dynamically
+     once the catalog loads from Supabase. */
+  document.addEventListener("click", function(e){
+    var btn = e.target.closest(".js-buy");
+    if (!btn) return;
+    var product = btn.getAttribute("data-product") || "";
+    var msg = "Hola! Quiero consultar por: " + product + ".";
+    window.open(buildWhatsappUrl(msg), "_blank", "noopener");
   });
+
+  /* ---- Catalog: loaded live from Supabase (table "products") ----
+     Public read only (RLS policy restricts anon access to SELECT),
+     so this anon key is safe to ship in client-side code. */
+  function formatPrice(n){
+    return "$ " + Number(n).toLocaleString("es-AR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  }
+
+  function escapeHtml(s){
+    return String(s == null ? "" : s).replace(/[&<>"']/g, function(c){
+      return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
+    });
+  }
+
+  var INSTALLMENT_ICON = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"></rect><line x1="2" y1="10" x2="22" y2="10"></line></svg>';
+  var DISCOUNT_ICON = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="5" x2="5" y2="19"></line><circle cx="6.5" cy="6.5" r="2.5"></circle><circle cx="17.5" cy="17.5" r="2.5"></circle></svg>';
+
+  function productCardHtml(p){
+    var img = p.image_url
+      ? '<img src="' + escapeHtml(p.image_url) + '" alt="' + escapeHtml(p.title) + '" style="width:100%;height:100%;object-fit:cover">'
+      : "<span>Foto del producto</span>";
+    var tags = "";
+    if (p.installment_label) tags += '<div class="tag tag-installment">' + INSTALLMENT_ICON + escapeHtml(p.installment_label) + "</div>";
+    if (p.discount_label) tags += '<div class="tag tag-discount">' + DISCOUNT_ICON + escapeHtml(p.discount_label) + "</div>";
+    var dataProduct = escapeHtml(p.title + (p.condition_label ? " (" + p.condition_label + ")" : ""));
+    return (
+      '<article class="product-card">' +
+        "<div>" +
+          (p.condition_label ? '<span class="product-condition">' + escapeHtml(p.condition_label) + "</span>" : "") +
+          '<h3 class="product-title">' + escapeHtml(p.title) + "</h3>" +
+        "</div>" +
+        '<div class="product-image">' + img + "</div>" +
+        '<div class="price-block">' +
+          (p.original_price ? '<span class="price-original">' + formatPrice(p.original_price) + "</span>" : "") +
+          '<span class="price-current">' + formatPrice(p.current_price) + "</span>" +
+        "</div>" +
+        '<div class="tag-row">' + tags + "</div>" +
+        '<button type="button" class="btn btn-primary btn-block js-buy" data-product="' + dataProduct + '">Comprar</button>' +
+      "</article>"
+    );
+  }
+
+  var CUSTOM_REQUEST_CARD_HTML =
+    '<div class="custom-request-card">' +
+      "<h4>¿No ves el modelo que buscás?</h4>" +
+      "<p>Conseguimos casi cualquier equipo por pedido, con el mismo control y la misma garantía.</p>" +
+      '<a href="#contacto" class="btn btn-primary btn-sm">Pedir un modelo</a>' +
+    "</div>";
+
+  function loadCatalog(){
+    var grids = {
+      usados: document.getElementById("grid-usados"),
+      nuevos: document.getElementById("grid-nuevos"),
+      otras: document.getElementById("grid-otras")
+    };
+    var endpoint = CONFIG.supabaseUrl + "/rest/v1/products?select=*&is_active=eq.true&order=sort_order.asc";
+
+    fetch(endpoint, {
+      headers: {
+        apikey: CONFIG.supabaseAnonKey,
+        Authorization: "Bearer " + CONFIG.supabaseAnonKey
+      }
+    })
+      .then(function(res){
+        if (!res.ok) throw new Error("HTTP " + res.status);
+        return res.json();
+      })
+      .then(function(products){
+        Object.keys(grids).forEach(function(key){ if (grids[key]) grids[key].innerHTML = ""; });
+        products.forEach(function(p){
+          var grid = grids[p.group_key];
+          if (grid) grid.insertAdjacentHTML("beforeend", productCardHtml(p));
+        });
+        if (grids.nuevos) grids.nuevos.insertAdjacentHTML("beforeend", CUSTOM_REQUEST_CARD_HTML);
+        Object.keys(grids).forEach(function(key){
+          var grid = grids[key];
+          if (grid && !grid.children.length){
+            grid.innerHTML = '<p class="catalog-error">Todavía no hay equipos cargados en esta categoría.</p>';
+          }
+        });
+      })
+      .catch(function(err){
+        console.error("[Tecnophone] Error cargando catálogo desde Supabase:", err);
+        Object.keys(grids).forEach(function(key){
+          if (grids[key]) grids[key].innerHTML = '<p class="catalog-error">No pudimos cargar el catálogo. Probá recargar la página o escribinos por WhatsApp.</p>';
+        });
+      });
+  }
+
+  loadCatalog();
 
   /* ---- Mobile nav toggle ---- */
   var navToggle = document.getElementById("navToggle");
