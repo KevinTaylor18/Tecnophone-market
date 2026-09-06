@@ -37,6 +37,13 @@ create policy "Authenticated users can delete"
   to authenticated
   using (true);
 
+-- Las políticas de arriba controlan QUÉ FILAS puede tocar "authenticated",
+-- pero al igual que con "anon", Postgres exige además un GRANT de tabla
+-- aparte para poder tocarla. Sin esto, cualquier operación falla con
+-- "permission denied for table products" antes de llegar a evaluar RLS.
+grant usage on schema public to authenticated;
+grant select, insert, update, delete on public.products to authenticated;
+
 -- ─────────────────────────────────────────────────────────────────
 -- CHECKLIST antes de dar esto por seguro (revisar una sola vez):
 --
