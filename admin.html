@@ -319,8 +319,8 @@ button{ font-family:inherit; }
             "</select></label>" +
           '<label class="form-field">Condición' +
             '<input type="text" class="f-condition" value="' + escapeHtml(p.condition_label) + '" placeholder="Ej: Usado · Batería 91%"></label>' +
-          '<label class="form-field">Color' +
-            '<input type="text" class="f-color" value="' + escapeHtml(p.color) + '" placeholder="Ej: Morado"></label>' +
+          '<label class="form-field wide">Color (uno = usado único · varios separados por coma = nuevo con opciones)' +
+            '<input type="text" class="f-color" value="' + escapeHtml(p.color) + '" placeholder="Ej: Morado — o: Negro, Blanco, Titanio Natural"></label>' +
           '<label class="form-field">Precio actual' +
             '<input type="number" step="0.01" min="0" class="f-current-price" value="' + (p.current_price != null ? p.current_price : "") + '" placeholder="0.00"></label>' +
           '<label class="form-field">Precio original' +
