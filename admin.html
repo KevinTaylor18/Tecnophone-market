@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Panel de administración — Tecnophone Market</title>
+<meta name="robots" content="noindex, nofollow">
+<link rel="icon" type="image/png" href="assets/logo-icon-black.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+<style>
+
+/* ============ Design tokens (mismos que index.html) ============ */
+:root{
+  --ink-900:#0A0A0A;
+  --ink-800:#1A1A1A;
+  --white:#FFFFFF;
+  --gray-200:#D9D9D9;
+  --gray-500:#8C8C8C;
+  --teal-500:#14B8A6;
+  --teal-700:#0F6B63;
+  --red-600:#C0392B;
+
+  --bg-page:var(--white);
+  --bg-surface:var(--white);
+  --bg-sunken:#F2F2F2;
+  --bg-inverse:var(--ink-900);
+  --bg-inverse-raised:var(--ink-800);
+
+  --text-primary:var(--ink-900);
+  --text-secondary:var(--gray-500);
+
+  --border-subtle:var(--gray-200);
+  --border-inverse:#2E2E2E;
+
+  --accent:var(--teal-500);
+  --accent-hover:var(--teal-700);
+  --accent-contrast:var(--white);
+  --focus-ring:var(--teal-500);
+
+  --space-1:4px; --space-2:8px; --space-3:12px; --space-4:16px;
+  --space-5:24px; --space-6:32px; --space-7:48px;
+
+  --radius-sm:8px; --radius-md:16px; --radius-lg:24px; --radius-pill:999px;
+
+  --shadow-card:0 1px 2px rgba(10,10,10,0.04),0 8px 24px rgba(10,10,10,0.06);
+  --shadow-card-hover:0 4px 8px rgba(10,10,10,0.06),0 16px 32px rgba(10,10,10,0.10);
+
+  --ease-standard:cubic-bezier(.4,0,.2,1);
+  --dur-fast:120ms;
+
+  --font-display:'Plus Jakarta Sans',system-ui,sans-serif;
+  --font-body:'Manrope',system-ui,sans-serif;
+}
+
+*{ box-sizing:border-box; }
+body{
+  margin:0;
+  background:var(--bg-sunken);
+  color:var(--text-primary);
+  font-family:var(--font-body);
+  -webkit-font-smoothing:antialiased;
+}
+h1,h2,h3,h4{ margin:0; font-family:var(--font-display); }
+p{ margin:0; }
+button{ font-family:inherit; }
+:focus-visible{ outline:2px solid var(--focus-ring); outline-offset:2px; }
+
+.container{ max-width:1100px; margin:0 auto; padding-inline:clamp(20px,5vw,64px); }
+
+/* ============ Buttons (mismos que index.html) ============ */
+.btn{
+  font-family:var(--font-display); font-weight:700; font-size:15px;
+  border-radius:var(--radius-pill); padding:13px 26px; border:none;
+  display:inline-flex; align-items:center; justify-content:center; gap:8px;
+  cursor:pointer; text-align:center;
+  transition:background var(--dur-fast) var(--ease-standard),
+             color var(--dur-fast) var(--ease-standard),
+             border-color var(--dur-fast) var(--ease-standard),
+             transform var(--dur-fast) var(--ease-standard);
+}
+.btn:active{ transform:scale(0.97); }
+.btn:disabled{ opacity:0.6; cursor:not-allowed; transform:none; }
+.btn-primary{ background:var(--accent); color:var(--accent-contrast); }
+.btn-primary:hover:not(:disabled){ background:var(--accent-hover); }
+.btn-dark{ background:var(--ink-900); color:var(--white); }
+.btn-dark:hover:not(:disabled){ background:var(--ink-800); }
+.btn-outline{ background:transparent; color:var(--text-primary); border:1.5px solid var(--border-subtle); }
+.btn-outline:hover:not(:disabled){ border-color:var(--ink-900); }
+.btn-block{ width:100%; }
+.btn-sm{ font-size:13px; padding:9px 18px; }
+
+/* ============ Header ============ */
+.site-header{ background:var(--bg-inverse); border-bottom:1px solid var(--border-inverse); }
+.header-row{ display:flex; align-items:center; justify-content:space-between; gap:var(--space-4); padding-block:16px; }
+.brand{ display:flex; align-items:center; gap:10px; min-width:0; }
+.brand img{ height:36px; width:auto; border-radius:8px; flex-shrink:0; }
+.brand-text{ display:flex; flex-direction:column; line-height:1.2; }
+.brand-name{ font-family:var(--font-display); font-weight:800; font-size:16px; letter-spacing:-0.01em; color:var(--white); }
+.brand-sub{ font-size:12px; color:var(--gray-500); }
+.header-user{ display:flex; align-items:center; gap:var(--space-4); }
+.header-user span{ font-size:14px; color:var(--gray-200); }
+
+/* ============ Login ============ */
+.login-wrap{ min-height:calc(100vh - 68px); display:flex; align-items:center; justify-content:center; padding:var(--space-6) var(--space-4); }
+.login-card{
+  width:100%; max-width:400px; background:var(--bg-surface); border-radius:var(--radius-lg);
+  padding:clamp(28px,4vw,40px); box-shadow:var(--shadow-card); display:flex; flex-direction:column; gap:var(--space-5);
+}
+.login-card h1{ font-weight:800; font-size:24px; letter-spacing:-0.01em; }
+.login-card .lead{ font-size:14px; color:var(--text-secondary); line-height:1.5; }
+.login-form{ display:flex; flex-direction:column; gap:var(--space-4); }
+.form-field{ display:flex; flex-direction:column; gap:6px; font-size:13px; font-weight:600; color:var(--text-primary); }
+.form-field input, .form-field select{
+  font-family:var(--font-body); font-size:15px; padding:12px 14px; border:1px solid var(--border-subtle);
+  border-radius:var(--radius-sm); background:var(--white); color:var(--text-primary); min-height:44px;
+}
+.form-field input:focus, .form-field select:focus{ border-color:var(--accent); }
+.form-msg{ font-size:13px; line-height:1.5; }
+.form-msg.is-error{ color:var(--red-600); }
+.form-msg.is-ok{ color:var(--accent-hover); }
+
+/* ============ Admin shell ============ */
+.admin-shell{ display:none; padding-block:var(--space-6) var(--space-7); }
+.admin-shell.is-visible{ display:block; }
+.admin-toolbar{ display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:var(--space-4); margin-bottom:var(--space-5); }
+.admin-toolbar h1{ font-weight:800; font-size:26px; letter-spacing:-0.01em; }
+.admin-toolbar .lead{ font-size:14px; color:var(--text-secondary); margin-top:4px; }
+.toolbar-actions{ display:flex; gap:var(--space-3); }
+
+.product-list{ display:flex; flex-direction:column; gap:var(--space-4); }
+.product-row{
+  background:var(--bg-surface); border-radius:var(--radius-lg); padding:var(--space-5);
+  box-shadow:var(--shadow-card); display:flex; flex-direction:column; gap:var(--space-4);
+}
+.product-row.is-new{ border:2px dashed var(--accent); }
+.row-grid{ display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:var(--space-4); }
+.row-grid .form-field.wide{ grid-column:1 / -1; }
+.row-footer{ display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:var(--space-3); padding-top:var(--space-3); border-top:1px solid var(--border-subtle); }
+.row-footer-left{ display:flex; align-items:center; gap:var(--space-4); flex-wrap:wrap; }
+.check-field{ display:flex; align-items:center; gap:8px; font-size:14px; font-weight:600; }
+.check-field input{ width:18px; height:18px; accent-color:var(--accent); }
+.row-status{ font-size:13px; color:var(--text-secondary); min-height:18px; }
+.row-status.is-ok{ color:var(--accent-hover); font-weight:600; }
+.row-status.is-error{ color:var(--red-600); font-weight:600; }
+.row-id{ font-size:12px; color:var(--text-secondary); font-family:monospace; }
+
+.empty-state, .loading-state{
+  background:var(--bg-surface); border-radius:var(--radius-lg); padding:var(--space-6);
+  text-align:center; color:var(--text-secondary); font-size:15px; box-shadow:var(--shadow-card);
+}
+
+@media (max-width:600px){
+  .header-user span{ display:none; }
+}
+</style>
+</head>
+<body>
+
+<header class="site-header">
+  <div class="container header-row">
+    <a href="admin.html" class="brand" style="text-decoration:none">
+      <img src="assets/logo-icon-black.png" alt="Tecnophone Market">
+      <span class="brand-text">
+        <span class="brand-name">Tecnophone Market</span>
+        <span class="brand-sub">Panel de administración</span>
+      </span>
+    </a>
+    <div class="header-user" id="headerUser" style="display:none">
+      <span id="userEmailLabel"></span>
+      <button type="button" class="btn btn-outline btn-sm" id="logoutBtn" style="border-color:var(--border-inverse); color:var(--white)">Cerrar sesión</button>
+    </div>
+  </div>
+</header>
+
+<main>
+
+  <!-- ============ Login (visible por defecto; es lo único que ve alguien sin sesión) ============ -->
+  <section class="login-wrap" id="loginView">
+    <div class="login-card">
+      <div>
+        <h1>Ingresar</h1>
+        <p class="lead">Acceso exclusivo para administración del catálogo. Iniciá sesión con tu cuenta autorizada.</p>
+      </div>
+      <form class="login-form" id="loginForm" novalidate>
+        <label class="form-field">Email
+          <input type="email" id="loginEmail" name="email" placeholder="tu@email.com" autocomplete="username" required>
+        </label>
+        <label class="form-field">Contraseña
+          <input type="password" id="loginPassword" name="password" placeholder="••••••••" autocomplete="current-password" required>
+        </label>
+        <span class="form-msg" id="loginMsg"></span>
+        <button type="submit" class="btn btn-dark btn-block" id="loginSubmitBtn">Ingresar</button>
+      </form>
+    </div>
+  </section>
+
+  <!-- ============ Admin (oculto hasta confirmar sesión activa) ============ -->
+  <section class="admin-shell" id="adminView">
+    <div class="container">
+      <div class="admin-toolbar">
+        <div>
+          <h1>Catálogo de productos</h1>
+          <p class="lead">Editá cualquier campo y tocá "Guardar" en la fila. Los productos inactivos no se muestran en el sitio público.</p>
+        </div>
+        <div class="toolbar-actions">
+          <button type="button" class="btn btn-primary" id="addProductBtn">+ Agregar producto nuevo</button>
+        </div>
+      </div>
+
+      <div class="product-list" id="productList">
+        <p class="loading-state">Cargando productos…</p>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<script>
+(function(){
+  "use strict";
+
+  /* ---- Config: mismo proyecto Supabase que usa index.html ---- */
+  var CONFIG = {
+    supabaseUrl: "https://vkglwajqvxizxfcqfdsd.supabase.co",
+    supabaseAnonKey: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZrZ2x3YWpxdnhpenhmY3FmZHNkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg2MjEzNzQsImV4cCI6MjEwNDE5NzM3NH0.XlD4R_7giKG7B5XTk5_kMlvg7ueFlKDdACnPuUnMSBY"
+  };
+
+  var sb = window.supabase.createClient(CONFIG.supabaseUrl, CONFIG.supabaseAnonKey);
+
+  var GROUP_LABELS = { usados: "iPhones usados", nuevos: "iPhones nuevos", otras: "Otras marcas" };
+
+  var loginView = document.getElementById("loginView");
+  var adminView = document.getElementById("adminView");
+  var headerUser = document.getElementById("headerUser");
+  var userEmailLabel = document.getElementById("userEmailLabel");
+  var loginForm = document.getElementById("loginForm");
+  var loginMsg = document.getElementById("loginMsg");
+  var loginSubmitBtn = document.getElementById("loginSubmitBtn");
+  var logoutBtn = document.getElementById("logoutBtn");
+  var addProductBtn = document.getElementById("addProductBtn");
+  var productList = document.getElementById("productList");
+
+  function escapeHtml(s){
+    return String(s == null ? "" : s).replace(/[&<>"']/g, function(c){
+      return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
+    });
+  }
+
+  /* ============ Vista: mostrar login u panel según sesión ============ */
+  function showLoggedOut(){
+    loginView.style.display = "flex";
+    adminView.classList.remove("is-visible");
+    headerUser.style.display = "none";
+    productList.innerHTML = "";
+  }
+
+  function showLoggedIn(user){
+    loginView.style.display = "none";
+    adminView.classList.add("is-visible");
+    headerUser.style.display = "flex";
+    userEmailLabel.textContent = user.email || "";
+    loadProducts();
+  }
+
+  /* ============ Login ============ */
+  loginForm.addEventListener("submit", function(e){
+    e.preventDefault();
+    var email = document.getElementById("loginEmail").value.trim();
+    var password = document.getElementById("loginPassword").value;
+    loginMsg.textContent = "";
+    loginMsg.className = "form-msg";
+    loginSubmitBtn.disabled = true;
+    loginSubmitBtn.textContent = "Ingresando…";
+
+    sb.auth.signInWithPassword({ email: email, password: password }).then(function(res){
+      loginSubmitBtn.disabled = false;
+      loginSubmitBtn.textContent = "Ingresar";
+      if (res.error){
+        loginMsg.textContent = "No pudimos iniciar sesión: " + res.error.message;
+        loginMsg.className = "form-msg is-error";
+        return;
+      }
+      loginForm.reset();
+      // onAuthStateChange se encarga de mostrar el panel.
+    });
+  });
+
+  logoutBtn.addEventListener("click", function(){
+    sb.auth.signOut();
+  });
+
+  /* ============ Carga de productos (autenticado ve activos e inactivos) ============ */
+  function loadProducts(){
+    productList.innerHTML = '<p class="loading-state">Cargando productos…</p>';
+    sb.from("products").select("*").order("group_key", { ascending: true }).order("sort_order", { ascending: true }).then(function(res){
+      if (res.error){
+        productList.innerHTML = '<p class="empty-state">No pudimos cargar el catálogo: ' + escapeHtml(res.error.message) + "</p>";
+        return;
+      }
+      renderProducts(res.data || []);
+    });
+  }
+
+  function productRowHtml(p, isNew){
+    var id = p.id != null ? p.id : "";
+    return (
+      '<article class="product-row' + (isNew ? " is-new" : "") + '" data-id="' + escapeHtml(id) + '">' +
+        '<div class="row-grid">' +
+          '<label class="form-field wide">Nombre' +
+            '<input type="text" class="f-title" value="' + escapeHtml(p.title) + '" placeholder="Ej: iPhone 13 128GB"></label>' +
+          '<label class="form-field">Categoría' +
+            '<select class="f-group">' +
+              Object.keys(GROUP_LABELS).map(function(key){
+                return '<option value="' + key + '"' + (p.group_key === key ? " selected" : "") + '>' + GROUP_LABELS[key] + "</option>";
+              }).join("") +
+            "</select></label>" +
+          '<label class="form-field">Condición' +
+            '<input type="text" class="f-condition" value="' + escapeHtml(p.condition_label) + '" placeholder="Ej: Usado · Batería 91%"></label>' +
+          '<label class="form-field">Precio actual' +
+            '<input type="number" step="0.01" min="0" class="f-current-price" value="' + (p.current_price != null ? p.current_price : "") + '" placeholder="0.00"></label>' +
+          '<label class="form-field">Precio original' +
+            '<input type="number" step="0.01" min="0" class="f-original-price" value="' + (p.original_price != null ? p.original_price : "") + '" placeholder="(opcional)"></label>' +
+          '<label class="form-field">Cuotas' +
+            '<input type="text" class="f-installment" value="' + escapeHtml(p.installment_label) + '" placeholder="Ej: Hasta 12 cuotas fijas"></label>' +
+          '<label class="form-field">Descuento' +
+            '<input type="text" class="f-discount" value="' + escapeHtml(p.discount_label) + '" placeholder="Ej: 10% off en efectivo"></label>' +
+          '<label class="form-field wide">Imagen (URL)' +
+            '<input type="text" class="f-image" value="' + escapeHtml(p.image_url) + '" placeholder="https://…"></label>' +
+        "</div>" +
+        '<div class="row-footer">' +
+          '<div class="row-footer-left">' +
+            '<label class="check-field"><input type="checkbox" class="f-active"' + (p.is_active ? " checked" : "") + "> Activo</label>" +
+            (id !== "" ? '<span class="row-id">ID ' + escapeHtml(id) + "</span>" : '<span class="row-id">Sin guardar</span>') +
+          "</div>" +
+          '<div style="display:flex; align-items:center; gap:16px;">' +
+            '<span class="row-status"></span>' +
+            '<button type="button" class="btn btn-primary btn-sm js-save">Guardar</button>' +
+          "</div>" +
+        "</div>" +
+      "</article>"
+    );
+  }
+
+  function renderProducts(products){
+    if (!products.length){
+      productList.innerHTML = '<p class="empty-state">Todavía no hay productos cargados. Usá "Agregar producto nuevo" para crear el primero.</p>';
+      return;
+    }
+    productList.innerHTML = products.map(function(p){ return productRowHtml(p, false); }).join("");
+  }
+
+  function readRowValues(row){
+    var currentPriceRaw = row.querySelector(".f-current-price").value;
+    var originalPriceRaw = row.querySelector(".f-original-price").value;
+    return {
+      title: row.querySelector(".f-title").value.trim(),
+      group_key: row.querySelector(".f-group").value,
+      condition_label: row.querySelector(".f-condition").value.trim() || null,
+      current_price: currentPriceRaw === "" ? 0 : Number(currentPriceRaw),
+      original_price: originalPriceRaw === "" ? null : Number(originalPriceRaw),
+      installment_label: row.querySelector(".f-installment").value.trim() || null,
+      discount_label: row.querySelector(".f-discount").value.trim() || null,
+      image_url: row.querySelector(".f-image").value.trim() || null,
+      is_active: row.querySelector(".f-active").checked
+    };
+  }
+
+  function setRowStatus(row, text, kind){
+    var status = row.querySelector(".row-status");
+    status.textContent = text;
+    status.className = "row-status" + (kind ? " is-" + kind : "");
+  }
+
+  /* ============ Guardar (update) / Insertar (nuevo) — delegado en el contenedor ============ */
+  productList.addEventListener("click", function(e){
+    var btn = e.target.closest(".js-save");
+    if (!btn) return;
+    var row = btn.closest(".product-row");
+    var id = row.getAttribute("data-id");
+    var values = readRowValues(row);
+
+    if (!values.title){
+      setRowStatus(row, "El nombre es obligatorio.", "error");
+      return;
+    }
+
+    btn.disabled = true;
+    var originalLabel = btn.textContent;
+    btn.textContent = "Guardando…";
+    setRowStatus(row, "", "");
+
+    var query = id
+      ? sb.from("products").update(values).eq("id", id).select()
+      : sb.from("products").insert(values).select();
+
+    query.then(function(res){
+      btn.disabled = false;
+      btn.textContent = originalLabel;
+      if (res.error){
+        setRowStatus(row, "Error al guardar: " + res.error.message, "error");
+        return;
+      }
+      var saved = res.data && res.data[0];
+      if (saved){
+        row.setAttribute("data-id", saved.id);
+        row.classList.remove("is-new");
+        var idLabel = row.querySelector(".row-id");
+        if (idLabel) idLabel.textContent = "ID " + saved.id;
+      }
+      setRowStatus(row, "Guardado ✓", "ok");
+    });
+  });
+
+  /* ============ Agregar producto nuevo ============ */
+  addProductBtn.addEventListener("click", function(){
+    var blank = {
+      id: null,
+      title: "",
+      group_key: "usados",
+      condition_label: "",
+      current_price: "",
+      original_price: "",
+      installment_label: "",
+      discount_label: "",
+      image_url: "",
+      is_active: true
+    };
+    productList.insertAdjacentHTML("afterbegin", productRowHtml(blank, true));
+    var newRow = productList.querySelector(".product-row.is-new");
+    if (newRow){
+      var titleInput = newRow.querySelector(".f-title");
+      if (titleInput) titleInput.focus();
+      newRow.scrollIntoView({ behavior: "smooth", block: "center" });
+    }
+    // Si estaba mostrando el mensaje de "no hay productos", ya no aplica.
+    var empty = productList.querySelector(".empty-state");
+    if (empty) empty.remove();
+  });
+
+  /* ============ Sesión: chequeo inicial + cambios en vivo ============ */
+  sb.auth.getSession().then(function(res){
+    var session = res.data && res.data.session;
+    if (session && session.user) showLoggedIn(session.user);
+    else showLoggedOut();
+  });
+
+  sb.auth.onAuthStateChange(function(_event, session){
+    if (session && session.user) showLoggedIn(session.user);
+    else showLoggedOut();
+  });
+
+})();
+</script>
+</body>
+</html>
