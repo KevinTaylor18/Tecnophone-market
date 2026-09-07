@@ -89,6 +89,8 @@ button{ font-family:inherit; }
 .btn-dark:hover:not(:disabled){ background:var(--ink-800); }
 .btn-outline{ background:transparent; color:var(--text-primary); border:1.5px solid var(--border-subtle); }
 .btn-outline:hover:not(:disabled){ border-color:var(--ink-900); }
+.btn-outline-danger{ background:transparent; color:var(--red-600); border:1.5px solid var(--red-600); }
+.btn-outline-danger:hover:not(:disabled){ background:var(--red-600); color:var(--white); }
 .btn-block{ width:100%; }
 .btn-sm{ font-size:13px; padding:9px 18px; }
 
@@ -151,6 +153,26 @@ button{ font-family:inherit; }
   background:var(--bg-surface); border-radius:var(--radius-lg); padding:var(--space-6);
   text-align:center; color:var(--text-secondary); font-size:15px; box-shadow:var(--shadow-card);
 }
+
+/* ============ Subida de foto ============ */
+.image-field-row{ display:flex; align-items:center; gap:var(--space-4); flex-wrap:wrap; }
+.image-preview{
+  width:72px; height:72px; border-radius:var(--radius-md); background:var(--bg-sunken);
+  border:1px solid var(--border-subtle); display:flex; align-items:center; justify-content:center;
+  overflow:hidden; flex-shrink:0;
+}
+.image-preview img{ width:100%; height:100%; object-fit:cover; }
+.image-preview-empty{ font-size:11px; color:var(--text-secondary); text-align:center; padding:4px; line-height:1.3; }
+.image-actions{ display:flex; flex-direction:column; gap:6px; }
+.image-actions-buttons{ display:flex; align-items:center; gap:14px; flex-wrap:wrap; }
+.image-remove-link{
+  font-family:inherit; font-size:13px; color:var(--text-secondary); background:none; border:none;
+  cursor:pointer; padding:0; text-decoration:underline;
+}
+.image-remove-link:hover{ color:var(--red-600); }
+.image-upload-status{ font-size:12px; color:var(--text-secondary); min-height:15px; }
+.image-upload-status.is-error{ color:var(--red-600); font-weight:600; }
+.image-upload-status.is-ok{ color:var(--accent-hover); font-weight:600; }
 
 @media (max-width:600px){
   .header-user span{ display:none; }
@@ -225,7 +247,8 @@ button{ font-family:inherit; }
   /* ---- Config: mismo proyecto Supabase que usa index.html ---- */
   var CONFIG = {
     supabaseUrl: "https://vkglwajqvxizxfcqfdsd.supabase.co",
-    supabaseAnonKey: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZrZ2x3YWpxdnhpenhmY3FmZHNkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg2MjEzNzQsImV4cCI6MjEwNDE5NzM3NH0.XlD4R_7giKG7B5XTk5_kMlvg7ueFlKDdACnPuUnMSBY"
+    supabaseAnonKey: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZrZ2x3YWpxdnhpenhmY3FmZHNkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg2MjEzNzQsImV4cCI6MjEwNDE5NzM3NH0.XlD4R_7giKG7B5XTk5_kMlvg7ueFlKDdACnPuUnMSBY",
+    storageBucket: "product-images"
   };
 
   var sb = window.supabase.createClient(CONFIG.supabaseUrl, CONFIG.supabaseAnonKey);
@@ -307,7 +330,7 @@ button{ font-family:inherit; }
   function productRowHtml(p, isNew){
     var id = p.id != null ? p.id : "";
     return (
-      '<article class="product-row' + (isNew ? " is-new" : "") + '" data-id="' + escapeHtml(id) + '">' +
+      '<article class="product-row' + (isNew ? " is-new" : "") + '" data-id="' + escapeHtml(id) + '" data-original-image="' + escapeHtml(p.image_url || "") + '">' +
         '<div class="row-grid">' +
           '<label class="form-field wide">Nombre' +
             '<input type="text" class="f-title" value="' + escapeHtml(p.title) + '" placeholder="Ej: iPhone 13 128GB"></label>' +
@@ -329,8 +352,24 @@ button{ font-family:inherit; }
             '<input type="text" class="f-installment" value="' + escapeHtml(p.installment_label) + '" placeholder="Ej: Hasta 12 cuotas fijas"></label>' +
           '<label class="form-field">Descuento' +
             '<input type="text" class="f-discount" value="' + escapeHtml(p.discount_label) + '" placeholder="Ej: 10% off en efectivo"></label>' +
-          '<label class="form-field wide">Imagen (URL)' +
-            '<input type="text" class="f-image" value="' + escapeHtml(p.image_url) + '" placeholder="https://…"></label>' +
+          '<div class="form-field wide">Foto del producto' +
+            '<div class="image-field-row">' +
+              '<div class="image-preview">' +
+                (p.image_url
+                  ? '<img src="' + escapeHtml(p.image_url) + '" alt="">'
+                  : '<span class="image-preview-empty">Sin imagen</span>') +
+              "</div>" +
+              '<div class="image-actions">' +
+                '<div class="image-actions-buttons">' +
+                  '<button type="button" class="btn btn-outline btn-sm js-upload-trigger">' + (p.image_url ? "Cambiar foto" : "Subir foto") + "</button>" +
+                  (p.image_url ? '<button type="button" class="image-remove-link js-remove-image">Quitar</button>' : "") +
+                "</div>" +
+                '<span class="image-upload-status"></span>' +
+              "</div>" +
+              '<input type="file" accept="image/*" class="f-image-file" style="display:none">' +
+              '<input type="hidden" class="f-image" value="' + escapeHtml(p.image_url) + '">' +
+            "</div>" +
+          "</div>" +
         "</div>" +
         '<div class="row-footer">' +
           '<div class="row-footer-left">' +
@@ -338,6 +377,7 @@ button{ font-family:inherit; }
             (id !== "" ? '<span class="row-id">ID ' + escapeHtml(id) + "</span>" : '<span class="row-id">Sin guardar</span>') +
           "</div>" +
           '<div style="display:flex; align-items:center; gap:16px;">' +
+            '<button type="button" class="btn btn-outline-danger btn-sm js-delete">Borrar</button>' +
             '<span class="row-status"></span>' +
             '<button type="button" class="btn btn-primary btn-sm js-save">Guardar</button>' +
           "</div>" +
@@ -377,6 +417,139 @@ button{ font-family:inherit; }
     status.className = "row-status" + (kind ? " is-" + kind : "");
   }
 
+  /* ============ Subida de foto a Supabase Storage ============
+     El archivo se sube apenas se elige (no hace falta tocar "Guardar"
+     para eso), pero la URL pública recién queda en la base cuando se
+     guarda la fila — igual que cualquier otro campo del formulario. */
+  function setImageStatus(row, text, kind){
+    var status = row.querySelector(".image-upload-status");
+    status.textContent = text;
+    status.className = "image-upload-status" + (kind ? " is-" + kind : "");
+  }
+
+  function uniqueFileName(file){
+    var parts = String(file.name || "").split(".");
+    var ext = parts.length > 1 ? parts.pop().toLowerCase().replace(/[^a-z0-9]/g, "") : "";
+    if (!ext) ext = "jpg";
+    var id = (window.crypto && crypto.randomUUID) ? crypto.randomUUID() : (Date.now() + "-" + Math.random().toString(36).slice(2));
+    return id + "." + ext;
+  }
+
+  function renderImagePreview(row, url){
+    var previewBox = row.querySelector(".image-preview");
+    var triggerBtn = row.querySelector(".js-upload-trigger");
+    var buttonsWrap = row.querySelector(".image-actions-buttons");
+    previewBox.innerHTML = url
+      ? '<img src="' + escapeHtml(url) + '" alt="">'
+      : '<span class="image-preview-empty">Sin imagen</span>';
+    triggerBtn.textContent = url ? "Cambiar foto" : "Subir foto";
+    var removeBtn = row.querySelector(".js-remove-image");
+    if (url && !removeBtn){
+      removeBtn = document.createElement("button");
+      removeBtn.type = "button";
+      removeBtn.className = "image-remove-link js-remove-image";
+      removeBtn.textContent = "Quitar";
+      buttonsWrap.appendChild(removeBtn);
+    } else if (!url && removeBtn){
+      removeBtn.remove();
+    }
+  }
+
+  function uploadImage(row, file){
+    if (!file.type || file.type.indexOf("image/") !== 0){
+      setImageStatus(row, "Elegí un archivo de imagen (JPG, PNG, WEBP…).", "error");
+      return;
+    }
+    var maxBytes = 8 * 1024 * 1024;
+    if (file.size > maxBytes){
+      setImageStatus(row, "La imagen pesa demasiado (máx. 8 MB).", "error");
+      return;
+    }
+
+    var triggerBtn = row.querySelector(".js-upload-trigger");
+    triggerBtn.disabled = true;
+    setImageStatus(row, "Subiendo…", "");
+
+    var path = uniqueFileName(file);
+    sb.storage.from(CONFIG.storageBucket).upload(path, file, { cacheControl: "3600", upsert: false })
+      .then(function(res){
+        triggerBtn.disabled = false;
+        if (res.error){
+          setImageStatus(row, "No se pudo subir la imagen: " + res.error.message, "error");
+          return;
+        }
+        var pub = sb.storage.from(CONFIG.storageBucket).getPublicUrl(path);
+        var url = pub.data && pub.data.publicUrl;
+        if (!url){
+          setImageStatus(row, "Se subió, pero no pudimos obtener el link público.", "error");
+          return;
+        }
+        row.querySelector(".f-image").value = url;
+        renderImagePreview(row, url);
+        setImageStatus(row, "Imagen subida ✓ — tocá \"Guardar\" para confirmar.", "ok");
+      })
+      .catch(function(err){
+        triggerBtn.disabled = false;
+        setImageStatus(row, "No se pudo subir la imagen: " + (err && err.message ? err.message : "error de red"), "error");
+      });
+  }
+
+  /* ============ Limpieza de fotos viejas en Storage ============
+     Se usa tanto al reemplazar la foto de un producto (al guardar)
+     como al borrar el producto entero. Nunca bloquea la acción
+     principal: un fallo acá solo queda en la consola. */
+  function storagePathFromPublicUrl(url){
+    if (!url) return null;
+    var marker = "/storage/v1/object/public/" + CONFIG.storageBucket + "/";
+    var idx = url.indexOf(marker);
+    if (idx === -1) return null; // no es un archivo de nuestro bucket (ej: URL externa pegada a mano)
+    var path = url.slice(idx + marker.length).split("?")[0];
+    try { return decodeURIComponent(path); } catch (e) { return path; }
+  }
+
+  function deleteStorageFileIfOwned(url){
+    var path = storagePathFromPublicUrl(url);
+    if (!path) return;
+    sb.storage.from(CONFIG.storageBucket).remove([path]).then(function(res){
+      if (res.error) console.warn("[admin] no se pudo borrar la foto vieja del bucket:", res.error.message);
+    }).catch(function(err){
+      console.warn("[admin] no se pudo borrar la foto vieja del bucket:", err && err.message);
+    });
+  }
+
+  function showEmptyStateIfNoProducts(){
+    if (!productList.querySelector(".product-row")){
+      productList.innerHTML = '<p class="empty-state">Todavía no hay productos cargados. Usá "Agregar producto nuevo" para crear el primero.</p>';
+    }
+  }
+
+  productList.addEventListener("click", function(e){
+    var triggerBtn = e.target.closest(".js-upload-trigger");
+    if (triggerBtn){
+      var row1 = triggerBtn.closest(".product-row");
+      var fileInput = row1.querySelector(".f-image-file");
+      if (fileInput) fileInput.click();
+      return;
+    }
+    var removeBtn = e.target.closest(".js-remove-image");
+    if (removeBtn){
+      var row2 = removeBtn.closest(".product-row");
+      row2.querySelector(".f-image").value = "";
+      renderImagePreview(row2, "");
+      setImageStatus(row2, "Foto quitada — tocá \"Guardar\" para confirmar.", "");
+      return;
+    }
+  });
+
+  productList.addEventListener("change", function(e){
+    var input = e.target.closest(".f-image-file");
+    if (!input) return;
+    var file = input.files && input.files[0];
+    input.value = ""; // permite volver a elegir el mismo archivo más adelante
+    if (!file) return;
+    uploadImage(input.closest(".product-row"), file);
+  });
+
   /* ============ Guardar (update) / Insertar (nuevo) — delegado en el contenedor ============ */
   productList.addEventListener("click", function(e){
     var btn = e.target.closest(".js-save");
@@ -414,6 +587,52 @@ button{ font-family:inherit; }
         if (idLabel) idLabel.textContent = "ID " + saved.id;
       }
       setRowStatus(row, "Guardado ✓", "ok");
+
+      // Si se reemplazó o se quitó la foto, borrar la vieja del bucket.
+      var oldImage = row.getAttribute("data-original-image") || "";
+      var newImage = values.image_url || "";
+      if (oldImage && oldImage !== newImage) deleteStorageFileIfOwned(oldImage);
+      row.setAttribute("data-original-image", newImage);
+    });
+  });
+
+  /* ============ Borrar producto ============ */
+  productList.addEventListener("click", function(e){
+    var deleteBtn = e.target.closest(".js-delete");
+    if (!deleteBtn) return;
+    var row = deleteBtn.closest(".product-row");
+    var id = row.getAttribute("data-id");
+    var title = row.querySelector(".f-title").value.trim() || "este producto";
+
+    if (!id){
+      // Fila nueva, todavía no guardada en la base: solo se descarta.
+      if (!window.confirm('¿Descartar "' + title + '"? Todavía no se había guardado.')) return;
+      var draftImage = row.querySelector(".f-image").value.trim();
+      if (draftImage) deleteStorageFileIfOwned(draftImage);
+      row.remove();
+      showEmptyStateIfNoProducts();
+      return;
+    }
+
+    if (!window.confirm('¿Borrar "' + title + '" del catálogo? Esta acción no se puede deshacer.')) return;
+
+    deleteBtn.disabled = true;
+    var originalLabel = deleteBtn.textContent;
+    deleteBtn.textContent = "Borrando…";
+    setRowStatus(row, "", "");
+
+    var imageToDelete = row.getAttribute("data-original-image") || "";
+
+    sb.from("products").delete().eq("id", id).then(function(res){
+      if (res.error){
+        deleteBtn.disabled = false;
+        deleteBtn.textContent = originalLabel;
+        setRowStatus(row, "Error al borrar: " + res.error.message, "error");
+        return;
+      }
+      if (imageToDelete) deleteStorageFileIfOwned(imageToDelete);
+      row.remove();
+      showEmptyStateIfNoProducts();
     });
   });
 
