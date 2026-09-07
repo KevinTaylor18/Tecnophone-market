@@ -214,7 +214,7 @@ button{ font-family:inherit; }
 }
 .product-card:hover{ box-shadow:var(--shadow-card-hover); transform:translateY(-2px); }
 .product-condition{ font-size:var(--fs-micro); font-weight:600; color:var(--accent-hover); text-transform:uppercase; letter-spacing:0.04em; }
-.product-meta-row{ display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin-bottom:2px; }
+.product-meta-row{ display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin-bottom:2px; min-height:24px; }
 .color-swatches{ display:flex; align-items:center; gap:6px; flex-wrap:wrap; }
 .color-swatch{
   position:relative; width:18px; height:18px; border-radius:50%; flex-shrink:0;
@@ -227,9 +227,9 @@ button{ font-family:inherit; }
   opacity:0; transition:opacity var(--dur-fast) var(--ease-standard);
 }
 .color-swatch:hover::after, .color-swatch:focus-visible::after, .color-swatch.is-active::after{ opacity:1; }
-.product-title{ font-weight:700; font-size:22px; line-height:1.3; }
+.product-title{ font-weight:700; font-size:22px; line-height:1.3; min-height:58px; }
 .product-image{
-  background:var(--bg-sunken); border-radius:var(--radius-md); aspect-ratio:1/1;
+  background:var(--bg-sunken); border-radius:var(--radius-md); width:100%; height:200px; flex-shrink:0;
   display:flex; align-items:center; justify-content:center; overflow:hidden;
 }
 .product-image span{ font-size:var(--fs-small); color:var(--text-secondary); }
@@ -318,7 +318,9 @@ button{ font-family:inherit; }
 .site-footer{ background:var(--bg-inverse); color:var(--white); padding-block:clamp(48px,6vw,80px) var(--space-6); }
 .footer-grid{ display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:var(--space-6); }
 .footer-brand{ display:flex; flex-direction:column; gap:var(--space-4); max-width:320px; }
-.footer-brand img{ height:56px; width:auto; border-radius:8px; align-self:flex-start; }
+.footer-logo{ display:flex; align-items:center; gap:10px; text-decoration:none; align-self:flex-start; }
+.footer-logo img{ height:40px; width:auto; border-radius:8px; flex-shrink:0; }
+.footer-logo span{ font-family:var(--font-display); font-weight:800; font-size:18px; letter-spacing:-0.01em; color:var(--white); }
 .footer-brand p{ font-size:15px; line-height:1.6; color:var(--gray-500); }
 .footer-col{ display:flex; flex-direction:column; gap:12px; }
 .footer-col span.col-title{ font-family:var(--font-display); font-weight:700; font-size:15px; color:var(--white); }
@@ -601,7 +603,10 @@ button{ font-family:inherit; }
   <div class="container">
     <div class="footer-grid">
       <div class="footer-brand">
-        <img src="assets/logo-full-black.png" alt="Tecnophone Market">
+        <a href="#top" class="footer-logo">
+          <img src="assets/logo-icon-black.png" alt="Tecnophone Market">
+          <span>Tecnophone Market</span>
+        </a>
         <p>Venta de iPhones nuevos y usados seleccionados, con revisión técnica, garantía de 60 días y asesoramiento cercano.</p>
       </div>
       <div class="footer-col">
@@ -770,14 +775,16 @@ button{ font-family:inherit; }
     if (p.discount_label) tags += '<div class="tag tag-discount">' + DISCOUNT_ICON + escapeHtml(p.discount_label) + "</div>";
     var dataProduct = escapeHtml(p.title + (p.condition_label ? " (" + p.condition_label + ")" : ""));
     var swatchesHtml = colorSwatchesHtml(p.color);
-    var hasMeta = p.condition_label || swatchesHtml;
     return (
       '<article class="product-card">' +
         "<div>" +
-          (hasMeta ? '<div class="product-meta-row">' +
+          // Siempre se renderiza, aunque esté vacía: reserva el mismo alto
+          // en toda tarjeta (con o sin condición/color) para que la imagen
+          // arranque exactamente en el mismo punto en toda la fila.
+          '<div class="product-meta-row">' +
             (p.condition_label ? '<span class="product-condition">' + escapeHtml(p.condition_label) + "</span>" : "") +
             swatchesHtml +
-          "</div>" : "") +
+          "</div>" +
           '<h3 class="product-title">' + escapeHtml(p.title) + "</h3>" +
         "</div>" +
         '<div class="product-image">' + img + "</div>" +
