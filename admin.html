@@ -495,6 +495,7 @@ button{ font-family:inherit; }
       sb.storage.from(CONFIG.storageBucket).upload(path, file, { cacheControl: "3600", upsert: false })
         .then(function(res){
           if (res.error){
+            console.error("[admin] Error al subir \"" + file.name + "\" a Storage:", res.error);
             setImageStatus(row, "No se pudo subir \"" + file.name + "\": " + res.error.message, "error");
             next(i + 1);
             return;
@@ -502,6 +503,7 @@ button{ font-family:inherit; }
           var pub = sb.storage.from(CONFIG.storageBucket).getPublicUrl(path);
           var url = pub.data && pub.data.publicUrl;
           if (!url){
+            console.error("[admin] Subida OK pero getPublicUrl no devolvió URL:", pub);
             setImageStatus(row, "\"" + file.name + "\" se subió, pero no pudimos obtener el link público.", "error");
             next(i + 1);
             return;
@@ -514,6 +516,7 @@ button{ font-family:inherit; }
           next(i + 1);
         })
         .catch(function(err){
+          console.error("[admin] Excepción al subir \"" + file.name + "\" a Storage:", err);
           setImageStatus(row, "No se pudo subir \"" + file.name + "\": " + (err && err.message ? err.message : "error de red"), "error");
           next(i + 1);
         });
@@ -574,13 +577,17 @@ button{ font-family:inherit; }
   productList.addEventListener("change", function(e){
     var input = e.target.closest(".f-image-file");
     if (!input) return;
-    var files = input.files;
+    var files = Array.prototype.slice.call(input.files || []); // copiar antes de resetear el input
     input.value = ""; // permite volver a elegir el mismo archivo más adelante
-    if (!files || !files.length) return;
+    if (!files.length) return;
     var row = input.closest(".product-row");
     // Evita subidas superpuestas si se toca "+" de nuevo mientras ya está subiendo.
-    if (row.dataset.uploading === "1") return;
+    if (row.dataset.uploading === "1"){
+      console.warn("[admin] Se ignoró la selección: esta fila ya tenía una subida en curso (o colgada). Si esto se repite, recargá la página.");
+      return;
+    }
     row.dataset.uploading = "1";
+    console.info("[admin] Subiendo " + files.length + " archivo(s):", files.map(function(f){ return f.name; }));
     uploadImages(row, files, function(){ row.dataset.uploading = "0"; });
   });
 
