@@ -154,22 +154,28 @@ button{ font-family:inherit; }
   text-align:center; color:var(--text-secondary); font-size:15px; box-shadow:var(--shadow-card);
 }
 
-/* ============ Subida de foto ============ */
-.image-field-row{ display:flex; align-items:center; gap:var(--space-4); flex-wrap:wrap; }
-.image-preview{
-  width:72px; height:72px; border-radius:var(--radius-md); background:var(--bg-sunken);
-  border:1px solid var(--border-subtle); display:flex; align-items:center; justify-content:center;
-  overflow:hidden; flex-shrink:0;
+/* ============ Galería de fotos ============ */
+.image-gallery-field{ display:flex; flex-direction:column; gap:10px; }
+.image-gallery{ display:flex; flex-wrap:wrap; gap:10px; }
+.image-thumb{
+  position:relative; width:72px; height:72px; border-radius:var(--radius-md); overflow:hidden;
+  background:var(--bg-sunken); border:1px solid var(--border-subtle); flex-shrink:0;
 }
-.image-preview img{ width:100%; height:100%; object-fit:cover; }
-.image-preview-empty{ font-size:11px; color:var(--text-secondary); text-align:center; padding:4px; line-height:1.3; }
-.image-actions{ display:flex; flex-direction:column; gap:6px; }
-.image-actions-buttons{ display:flex; align-items:center; gap:14px; flex-wrap:wrap; }
-.image-remove-link{
-  font-family:inherit; font-size:13px; color:var(--text-secondary); background:none; border:none;
-  cursor:pointer; padding:0; text-decoration:underline;
+.image-thumb img{ width:100%; height:100%; object-fit:cover; }
+.image-thumb-remove{
+  position:absolute; top:2px; right:2px; width:20px; height:20px; border-radius:50%;
+  background:rgba(10,10,10,0.7); color:var(--white); border:none; cursor:pointer;
+  display:flex; align-items:center; justify-content:center; font-size:14px; line-height:1; padding:0;
+  transition:background var(--dur-fast) var(--ease-standard);
 }
-.image-remove-link:hover{ color:var(--red-600); }
+.image-thumb-remove:hover{ background:var(--red-600); }
+.image-thumb-add{
+  width:72px; height:72px; border-radius:var(--radius-md); border:1.5px dashed var(--border-subtle);
+  background:transparent; color:var(--text-secondary); cursor:pointer; font-size:26px; font-weight:600;
+  display:flex; align-items:center; justify-content:center; flex-shrink:0; line-height:1;
+  transition:border-color var(--dur-fast) var(--ease-standard), color var(--dur-fast) var(--ease-standard);
+}
+.image-thumb-add:hover:not(:disabled){ border-color:var(--ink-900); color:var(--ink-900); }
 .image-upload-status{ font-size:12px; color:var(--text-secondary); min-height:15px; }
 .image-upload-status.is-error{ color:var(--red-600); font-weight:600; }
 .image-upload-status.is-ok{ color:var(--accent-hover); font-weight:600; }
@@ -327,10 +333,24 @@ button{ font-family:inherit; }
     });
   }
 
+  function imageThumbHtml(url){
+    return (
+      '<div class="image-thumb">' +
+        '<img src="' + escapeHtml(url) + '" alt="">' +
+        '<button type="button" class="image-thumb-remove" data-url="' + escapeHtml(url) + '" aria-label="Quitar esta foto">&times;</button>' +
+      "</div>"
+    );
+  }
+
+  function imageGalleryHtml(urls){
+    return urls.map(imageThumbHtml).join("") + '<button type="button" class="image-thumb-add js-upload-trigger" aria-label="Agregar foto">+</button>';
+  }
+
   function productRowHtml(p, isNew){
     var id = p.id != null ? p.id : "";
+    var initialImages = String(p.image_urls || "").split(",").map(function(s){ return s.trim(); }).filter(Boolean);
     return (
-      '<article class="product-row' + (isNew ? " is-new" : "") + '" data-id="' + escapeHtml(id) + '" data-original-image="' + escapeHtml(p.image_url || "") + '">' +
+      '<article class="product-row' + (isNew ? " is-new" : "") + '" data-id="' + escapeHtml(id) + '" data-original-images="' + escapeHtml(initialImages.join(",")) + '">' +
         '<div class="row-grid">' +
           '<label class="form-field wide">Nombre' +
             '<input type="text" class="f-title" value="' + escapeHtml(p.title) + '" placeholder="Ej: iPhone 13 128GB"></label>' +
@@ -352,22 +372,12 @@ button{ font-family:inherit; }
             '<input type="text" class="f-installment" value="' + escapeHtml(p.installment_label) + '" placeholder="Ej: Hasta 12 cuotas fijas"></label>' +
           '<label class="form-field">Descuento' +
             '<input type="text" class="f-discount" value="' + escapeHtml(p.discount_label) + '" placeholder="Ej: 10% off en efectivo"></label>' +
-          '<div class="form-field wide">Foto del producto' +
-            '<div class="image-field-row">' +
-              '<div class="image-preview">' +
-                (p.image_url
-                  ? '<img src="' + escapeHtml(p.image_url) + '" alt="">'
-                  : '<span class="image-preview-empty">Sin imagen</span>') +
-              "</div>" +
-              '<div class="image-actions">' +
-                '<div class="image-actions-buttons">' +
-                  '<button type="button" class="btn btn-outline btn-sm js-upload-trigger">' + (p.image_url ? "Cambiar foto" : "Subir foto") + "</button>" +
-                  (p.image_url ? '<button type="button" class="image-remove-link js-remove-image">Quitar</button>' : "") +
-                "</div>" +
-                '<span class="image-upload-status"></span>' +
-              "</div>" +
-              '<input type="file" accept="image/*" class="f-image-file" style="display:none">' +
-              '<input type="hidden" class="f-image" value="' + escapeHtml(p.image_url) + '">' +
+          '<div class="form-field wide">Fotos del producto' +
+            '<div class="image-gallery-field">' +
+              '<div class="image-gallery">' + imageGalleryHtml(initialImages) + "</div>" +
+              '<input type="file" accept="image/*" multiple class="f-image-file" style="display:none">' +
+              '<input type="hidden" class="f-image" value="' + escapeHtml(initialImages.join(",")) + '">' +
+              '<span class="image-upload-status"></span>' +
             "</div>" +
           "</div>" +
         "</div>" +
@@ -406,7 +416,7 @@ button{ font-family:inherit; }
       original_price: originalPriceRaw === "" ? null : Number(originalPriceRaw),
       installment_label: row.querySelector(".f-installment").value.trim() || null,
       discount_label: row.querySelector(".f-discount").value.trim() || null,
-      image_url: row.querySelector(".f-image").value.trim() || null,
+      image_urls: row.querySelector(".f-image").value.trim() || null,
       is_active: row.querySelector(".f-active").checked
     };
   }
@@ -435,63 +445,81 @@ button{ font-family:inherit; }
     return id + "." + ext;
   }
 
-  function renderImagePreview(row, url){
-    var previewBox = row.querySelector(".image-preview");
-    var triggerBtn = row.querySelector(".js-upload-trigger");
-    var buttonsWrap = row.querySelector(".image-actions-buttons");
-    previewBox.innerHTML = url
-      ? '<img src="' + escapeHtml(url) + '" alt="">'
-      : '<span class="image-preview-empty">Sin imagen</span>';
-    triggerBtn.textContent = url ? "Cambiar foto" : "Subir foto";
-    var removeBtn = row.querySelector(".js-remove-image");
-    if (url && !removeBtn){
-      removeBtn = document.createElement("button");
-      removeBtn.type = "button";
-      removeBtn.className = "image-remove-link js-remove-image";
-      removeBtn.textContent = "Quitar";
-      buttonsWrap.appendChild(removeBtn);
-    } else if (!url && removeBtn){
-      removeBtn.remove();
-    }
+  function getRowImageUrls(row){
+    var raw = row.querySelector(".f-image").value.trim();
+    return raw ? raw.split(",").map(function(s){ return s.trim(); }).filter(Boolean) : [];
   }
 
-  function uploadImage(row, file){
-    if (!file.type || file.type.indexOf("image/") !== 0){
-      setImageStatus(row, "Elegí un archivo de imagen (JPG, PNG, WEBP…).", "error");
-      return;
-    }
+  function renderImageGallery(row, urls){
+    row.querySelector(".f-image").value = urls.join(",");
+    row.querySelector(".image-gallery").innerHTML = imageGalleryHtml(urls);
+  }
+
+  /* Sube uno o varios archivos en secuencia, agregando cada foto a la
+     galería apenas termina (no hace falta esperar a que terminen todas
+     para ver la primera). Un archivo inválido o que falla no corta la
+     subida de los demás. */
+  function uploadImages(row, fileList, onDone){
+    var files = Array.prototype.slice.call(fileList);
+    var total = files.length;
+    var uploadedCount = 0;
     var maxBytes = 8 * 1024 * 1024;
-    if (file.size > maxBytes){
-      setImageStatus(row, "La imagen pesa demasiado (máx. 8 MB).", "error");
-      return;
+
+    function next(i){
+      if (i >= total){
+        if (total > 1){
+          setImageStatus(
+            row,
+            uploadedCount === total ? "Se subieron las " + total + " fotos ✓ — tocá \"Guardar\" para confirmar." : "Se subieron " + uploadedCount + " de " + total + " fotos.",
+            uploadedCount === total ? "ok" : "error"
+          );
+        }
+        onDone();
+        return;
+      }
+      var file = files[i];
+      if (!file.type || file.type.indexOf("image/") !== 0){
+        setImageStatus(row, "Se salteó \"" + file.name + "\": no es una imagen.", "error");
+        next(i + 1);
+        return;
+      }
+      if (file.size > maxBytes){
+        setImageStatus(row, "Se salteó \"" + file.name + "\": pesa más de 8 MB.", "error");
+        next(i + 1);
+        return;
+      }
+      if (total === 1) setImageStatus(row, "Subiendo…", "");
+      else setImageStatus(row, "Subiendo " + (i + 1) + " de " + total + "…", "");
+
+      var path = uniqueFileName(file);
+      sb.storage.from(CONFIG.storageBucket).upload(path, file, { cacheControl: "3600", upsert: false })
+        .then(function(res){
+          if (res.error){
+            setImageStatus(row, "No se pudo subir \"" + file.name + "\": " + res.error.message, "error");
+            next(i + 1);
+            return;
+          }
+          var pub = sb.storage.from(CONFIG.storageBucket).getPublicUrl(path);
+          var url = pub.data && pub.data.publicUrl;
+          if (!url){
+            setImageStatus(row, "\"" + file.name + "\" se subió, pero no pudimos obtener el link público.", "error");
+            next(i + 1);
+            return;
+          }
+          uploadedCount++;
+          var urls = getRowImageUrls(row);
+          urls.push(url);
+          renderImageGallery(row, urls);
+          if (total === 1) setImageStatus(row, "Imagen subida ✓ — tocá \"Guardar\" para confirmar.", "ok");
+          next(i + 1);
+        })
+        .catch(function(err){
+          setImageStatus(row, "No se pudo subir \"" + file.name + "\": " + (err && err.message ? err.message : "error de red"), "error");
+          next(i + 1);
+        });
     }
 
-    var triggerBtn = row.querySelector(".js-upload-trigger");
-    triggerBtn.disabled = true;
-    setImageStatus(row, "Subiendo…", "");
-
-    var path = uniqueFileName(file);
-    sb.storage.from(CONFIG.storageBucket).upload(path, file, { cacheControl: "3600", upsert: false })
-      .then(function(res){
-        triggerBtn.disabled = false;
-        if (res.error){
-          setImageStatus(row, "No se pudo subir la imagen: " + res.error.message, "error");
-          return;
-        }
-        var pub = sb.storage.from(CONFIG.storageBucket).getPublicUrl(path);
-        var url = pub.data && pub.data.publicUrl;
-        if (!url){
-          setImageStatus(row, "Se subió, pero no pudimos obtener el link público.", "error");
-          return;
-        }
-        row.querySelector(".f-image").value = url;
-        renderImagePreview(row, url);
-        setImageStatus(row, "Imagen subida ✓ — tocá \"Guardar\" para confirmar.", "ok");
-      })
-      .catch(function(err){
-        triggerBtn.disabled = false;
-        setImageStatus(row, "No se pudo subir la imagen: " + (err && err.message ? err.message : "error de red"), "error");
-      });
+    next(0);
   }
 
   /* ============ Limpieza de fotos viejas en Storage ============
@@ -526,16 +554,18 @@ button{ font-family:inherit; }
   productList.addEventListener("click", function(e){
     var triggerBtn = e.target.closest(".js-upload-trigger");
     if (triggerBtn){
+      if (triggerBtn.disabled) return;
       var row1 = triggerBtn.closest(".product-row");
       var fileInput = row1.querySelector(".f-image-file");
       if (fileInput) fileInput.click();
       return;
     }
-    var removeBtn = e.target.closest(".js-remove-image");
-    if (removeBtn){
-      var row2 = removeBtn.closest(".product-row");
-      row2.querySelector(".f-image").value = "";
-      renderImagePreview(row2, "");
+    var removeThumb = e.target.closest(".image-thumb-remove");
+    if (removeThumb){
+      var row2 = removeThumb.closest(".product-row");
+      var urlToRemove = removeThumb.getAttribute("data-url");
+      var urls = getRowImageUrls(row2).filter(function(u){ return u !== urlToRemove; });
+      renderImageGallery(row2, urls);
       setImageStatus(row2, "Foto quitada — tocá \"Guardar\" para confirmar.", "");
       return;
     }
@@ -544,10 +574,14 @@ button{ font-family:inherit; }
   productList.addEventListener("change", function(e){
     var input = e.target.closest(".f-image-file");
     if (!input) return;
-    var file = input.files && input.files[0];
+    var files = input.files;
     input.value = ""; // permite volver a elegir el mismo archivo más adelante
-    if (!file) return;
-    uploadImage(input.closest(".product-row"), file);
+    if (!files || !files.length) return;
+    var row = input.closest(".product-row");
+    // Evita subidas superpuestas si se toca "+" de nuevo mientras ya está subiendo.
+    if (row.dataset.uploading === "1") return;
+    row.dataset.uploading = "1";
+    uploadImages(row, files, function(){ row.dataset.uploading = "0"; });
   });
 
   /* ============ Guardar (update) / Insertar (nuevo) — delegado en el contenedor ============ */
@@ -588,11 +622,11 @@ button{ font-family:inherit; }
       }
       setRowStatus(row, "Guardado ✓", "ok");
 
-      // Si se reemplazó o se quitó la foto, borrar la vieja del bucket.
-      var oldImage = row.getAttribute("data-original-image") || "";
-      var newImage = values.image_url || "";
-      if (oldImage && oldImage !== newImage) deleteStorageFileIfOwned(oldImage);
-      row.setAttribute("data-original-image", newImage);
+      // Fotos que estaban antes y ya no están: se borran del bucket.
+      var oldImages = (row.getAttribute("data-original-images") || "").split(",").map(function(s){ return s.trim(); }).filter(Boolean);
+      var newImages = getRowImageUrls(row);
+      oldImages.filter(function(u){ return newImages.indexOf(u) === -1; }).forEach(deleteStorageFileIfOwned);
+      row.setAttribute("data-original-images", newImages.join(","));
     });
   });
 
@@ -607,8 +641,7 @@ button{ font-family:inherit; }
     if (!id){
       // Fila nueva, todavía no guardada en la base: solo se descarta.
       if (!window.confirm('¿Descartar "' + title + '"? Todavía no se había guardado.')) return;
-      var draftImage = row.querySelector(".f-image").value.trim();
-      if (draftImage) deleteStorageFileIfOwned(draftImage);
+      getRowImageUrls(row).forEach(deleteStorageFileIfOwned);
       row.remove();
       showEmptyStateIfNoProducts();
       return;
@@ -621,7 +654,7 @@ button{ font-family:inherit; }
     deleteBtn.textContent = "Borrando…";
     setRowStatus(row, "", "");
 
-    var imageToDelete = row.getAttribute("data-original-image") || "";
+    var imagesToDelete = (row.getAttribute("data-original-images") || "").split(",").map(function(s){ return s.trim(); }).filter(Boolean);
 
     sb.from("products").delete().eq("id", id).then(function(res){
       if (res.error){
@@ -630,7 +663,7 @@ button{ font-family:inherit; }
         setRowStatus(row, "Error al borrar: " + res.error.message, "error");
         return;
       }
-      if (imageToDelete) deleteStorageFileIfOwned(imageToDelete);
+      imagesToDelete.forEach(deleteStorageFileIfOwned);
       row.remove();
       showEmptyStateIfNoProducts();
     });
@@ -648,7 +681,7 @@ button{ font-family:inherit; }
       original_price: "",
       installment_label: "",
       discount_label: "",
-      image_url: "",
+      image_urls: "",
       is_active: true
     };
     productList.insertAdjacentHTML("afterbegin", productRowHtml(blank, true));
