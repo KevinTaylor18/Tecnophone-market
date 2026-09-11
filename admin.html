@@ -132,12 +132,12 @@ button{ font-family:inherit; }
 .admin-toolbar .lead{ font-size:14px; color:var(--text-secondary); margin-top:4px; }
 .toolbar-actions{ display:flex; gap:var(--space-3); }
 
-.product-list{ display:flex; flex-direction:column; gap:var(--space-4); }
-.product-row{
+.product-list, .category-list{ display:flex; flex-direction:column; gap:var(--space-4); }
+.product-row, .category-row{
   background:var(--bg-surface); border-radius:var(--radius-lg); padding:var(--space-5);
   box-shadow:var(--shadow-card); display:flex; flex-direction:column; gap:var(--space-4);
 }
-.product-row.is-new{ border:2px dashed var(--accent); }
+.product-row.is-new, .category-row.is-new{ border:2px dashed var(--accent); }
 .row-grid{ display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:var(--space-4); }
 .row-grid .form-field.wide{ grid-column:1 / -1; }
 .row-footer{ display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:var(--space-3); padding-top:var(--space-3); border-top:1px solid var(--border-subtle); }
@@ -249,6 +249,20 @@ button{ font-family:inherit; }
     <div class="container">
       <div class="admin-toolbar">
         <div>
+          <h1>Categorías</h1>
+          <p class="lead">Creá, editá el orden y desactivá categorías del catálogo. Una categoría desactivada deja de mostrarse en el sitio (y ya no aparece para elegir en productos nuevos), pero los productos que ya la tenían asignada no se tocan.</p>
+        </div>
+        <div class="toolbar-actions">
+          <button type="button" class="btn btn-primary" id="addCategoryBtn">+ Agregar categoría</button>
+        </div>
+      </div>
+
+      <div class="category-list" id="categoryList">
+        <p class="loading-state">Cargando categorías…</p>
+      </div>
+
+      <div class="admin-toolbar" style="margin-top:var(--space-7)">
+        <div>
           <h1>Catálogo de productos</h1>
           <p class="lead">Editá cualquier campo y tocá "Guardar" en la fila. Los productos inactivos no se muestran en el sitio público.</p>
         </div>
@@ -289,7 +303,11 @@ button{ font-family:inherit; }
 
   var sb = window.supabase.createClient(CONFIG.supabaseUrl, CONFIG.supabaseAnonKey);
 
-  var GROUP_LABELS = { usados: "iPhones usados", nuevos: "iPhones nuevos", otras: "Otras marcas" };
+  // Categorías reales de la tabla "categories" — se cargan al loguearse
+  // (ver loadCategories) y alimentan tanto la sección de categorías como
+  // el selector de categoría de cada producto. Ya no hay una lista fija
+  // en el código: agregar una categoría nueva es una fila más en la base.
+  var categories = [];
 
   var loginView = document.getElementById("loginView");
   var adminView = document.getElementById("adminView");
@@ -299,6 +317,8 @@ button{ font-family:inherit; }
   var loginMsg = document.getElementById("loginMsg");
   var loginSubmitBtn = document.getElementById("loginSubmitBtn");
   var logoutBtn = document.getElementById("logoutBtn");
+  var addCategoryBtn = document.getElementById("addCategoryBtn");
+  var categoryList = document.getElementById("categoryList");
   var addProductBtn = document.getElementById("addProductBtn");
   var productList = document.getElementById("productList");
   var messageList = document.getElementById("messageList");
@@ -314,6 +334,7 @@ button{ font-family:inherit; }
     loginView.style.display = "flex";
     adminView.classList.remove("is-visible");
     headerUser.style.display = "none";
+    categoryList.innerHTML = "";
     productList.innerHTML = "";
     messageList.innerHTML = "";
   }
@@ -323,7 +344,12 @@ button{ font-family:inherit; }
     adminView.classList.add("is-visible");
     headerUser.style.display = "flex";
     userEmailLabel.textContent = user.email || "";
-    loadProducts();
+    // Las categorías tienen que estar cargadas ANTES de renderizar
+    // productos: el selector de categoría de cada fila se arma con la
+    // lista real de "categories".
+    loadCategories().then(function(){
+      loadProducts();
+    });
     loadMessages();
   }
 
@@ -352,6 +378,159 @@ button{ font-family:inherit; }
 
   logoutBtn.addEventListener("click", function(){
     sb.auth.signOut();
+  });
+
+  /* ============ Categorías del catálogo ============
+     Reemplazan la lista fija que había antes ("usados"/"nuevos"/"otras")
+     — de acá sale tanto esta sección de administración como el selector
+     de categoría de cada producto. */
+
+  // Convierte cualquier texto en un slug válido para usar como
+  // group_key/URL (minúsculas, sin acentos, solo letras/números/guiones).
+  // Si el campo "slug" queda vacío al guardar, se genera a partir del
+  // nombre — así alcanza con escribir el nombre para la mayoría de los casos.
+  function slugify(s){
+    var noAccents = String(s || "").trim().toLowerCase().normalize("NFD");
+    var stripped = "";
+    for (var i = 0; i < noAccents.length; i++){
+      var code = noAccents.charCodeAt(i);
+      if (code < 0x300 || code > 0x36f) stripped += noAccents[i]; // saca acentos (marcas combinantes NFD)
+    }
+    return stripped.replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
+  }
+
+  function categoryRowHtml(c, isNew){
+    var id = c.id != null ? c.id : "";
+    return (
+      '<article class="category-row' + (isNew ? " is-new" : "") + '" data-id="' + escapeHtml(id) + '">' +
+        '<div class="row-grid">' +
+          '<label class="form-field wide">Nombre visible' +
+            '<input type="text" class="f-cat-name" value="' + escapeHtml(c.name) + '" placeholder="Ej: Accesorios"></label>' +
+          '<label class="form-field">Slug (identificador interno)' +
+            '<input type="text" class="f-cat-slug" value="' + escapeHtml(c.slug) + '" placeholder="se genera solo si lo dejás vacío"></label>' +
+          '<label class="form-field">Orden' +
+            '<input type="number" step="1" class="f-cat-order" value="' + (c.sort_order != null ? c.sort_order : 0) + '"></label>' +
+        "</div>" +
+        '<div class="row-footer">' +
+          '<div class="row-footer-left">' +
+            '<label class="check-field"><input type="checkbox" class="f-cat-active"' + (c.is_active ? " checked" : "") + "> Activa</label>" +
+            (id !== "" ? '<span class="row-id">ID ' + escapeHtml(id) + "</span>" : '<span class="row-id">Sin guardar</span>') +
+          "</div>" +
+          '<div style="display:flex; align-items:center; gap:16px;">' +
+            '<span class="row-status"></span>' +
+            '<button type="button" class="btn btn-primary btn-sm js-cat-save">Guardar</button>' +
+          "</div>" +
+        "</div>" +
+      "</article>"
+    );
+  }
+
+  function renderCategories(list){
+    if (!list.length){
+      categoryList.innerHTML = '<p class="empty-state">Todavía no hay categorías cargadas. Usá "Agregar categoría" para crear la primera.</p>';
+      return;
+    }
+    categoryList.innerHTML = list.map(function(c){ return categoryRowHtml(c, false); }).join("");
+  }
+
+  // Trae TODAS las categorías (activas e inactivas — a diferencia del
+  // sitio público, acá el admin necesita ver y poder reactivar las que
+  // desactivó). Devuelve la promesa para poder encadenar loadProducts()
+  // después: el selector de categoría de cada producto necesita esta
+  // lista ya cargada.
+  function loadCategories(){
+    categoryList.innerHTML = '<p class="loading-state">Cargando categorías…</p>';
+    return sb.from("categories").select("*").order("sort_order", { ascending: true }).then(function(res){
+      if (res.error){
+        categoryList.innerHTML = '<p class="empty-state">No pudimos cargar las categorías: ' + escapeHtml(res.error.message) + "</p>";
+        categories = [];
+        return;
+      }
+      categories = res.data || [];
+      renderCategories(categories);
+    });
+  }
+
+  function setCategoryRowStatus(row, text, kind){
+    var status = row.querySelector(".row-status");
+    status.textContent = text;
+    status.className = "row-status" + (kind ? " is-" + kind : "");
+  }
+
+  /* ---- Guardar (update) / Insertar (nueva) — igual que en productos:
+     solo se actualiza ESA fila en el DOM, sin recargar toda la lista
+     (así no se pierden ediciones sin guardar en otras filas). */
+  categoryList.addEventListener("click", function(e){
+    var btn = e.target.closest(".js-cat-save");
+    if (!btn) return;
+    var row = btn.closest(".category-row");
+    var id = row.getAttribute("data-id");
+    var name = row.querySelector(".f-cat-name").value.trim();
+    var slug = slugify(row.querySelector(".f-cat-slug").value || name);
+    var sortOrderRaw = row.querySelector(".f-cat-order").value;
+
+    if (!name){
+      setCategoryRowStatus(row, "El nombre es obligatorio.", "error");
+      return;
+    }
+    if (!slug){
+      setCategoryRowStatus(row, "El slug es obligatorio (usá letras, números o guiones).", "error");
+      return;
+    }
+
+    var values = {
+      name: name,
+      slug: slug,
+      sort_order: sortOrderRaw === "" ? 0 : Number(sortOrderRaw),
+      is_active: row.querySelector(".f-cat-active").checked
+    };
+
+    btn.disabled = true;
+    var originalLabel = btn.textContent;
+    btn.textContent = "Guardando…";
+    setCategoryRowStatus(row, "", "");
+
+    var query = id
+      ? sb.from("categories").update(values).eq("id", id).select()
+      : sb.from("categories").insert(values).select();
+
+    query.then(function(res){
+      btn.disabled = false;
+      btn.textContent = originalLabel;
+      if (res.error){
+        setCategoryRowStatus(row, "Error al guardar: " + res.error.message, "error");
+        return;
+      }
+      var saved = res.data && res.data[0];
+      if (saved){
+        row.setAttribute("data-id", saved.id);
+        row.classList.remove("is-new");
+        var idLabel = row.querySelector(".row-id");
+        if (idLabel) idLabel.textContent = "ID " + saved.id;
+        // Refleja el slug final (por si se auto-generó o se normalizó)
+        // y actualiza la copia en memoria que usa el selector de
+        // categoría de los productos.
+        row.querySelector(".f-cat-slug").value = saved.slug;
+        var idx = categories.findIndex(function(c){ return c.id === saved.id; });
+        if (idx === -1) categories.push(saved); else categories[idx] = saved;
+      }
+      setCategoryRowStatus(row, "Guardado ✓", "ok");
+    });
+  });
+
+  /* ============ Agregar categoría nueva ============ */
+  addCategoryBtn.addEventListener("click", function(){
+    var nextOrder = categories.reduce(function(max, c){ return Math.max(max, c.sort_order || 0); }, 0) + 1;
+    var blank = { id: null, name: "", slug: "", sort_order: nextOrder, is_active: true };
+    categoryList.insertAdjacentHTML("afterbegin", categoryRowHtml(blank, true));
+    var newRow = categoryList.querySelector(".category-row.is-new");
+    if (newRow){
+      var nameInput = newRow.querySelector(".f-cat-name");
+      if (nameInput) nameInput.focus();
+      newRow.scrollIntoView({ behavior: "smooth", block: "center" });
+    }
+    var empty = categoryList.querySelector(".empty-state");
+    if (empty) empty.remove();
   });
 
   /* ============ Carga de productos (autenticado ve activos e inactivos) ============ */
@@ -389,9 +568,16 @@ button{ font-family:inherit; }
             '<input type="text" class="f-title" value="' + escapeHtml(p.title) + '" placeholder="Ej: iPhone 13 128GB"></label>' +
           '<label class="form-field">Categoría' +
             '<select class="f-group">' +
-              Object.keys(GROUP_LABELS).map(function(key){
-                return '<option value="' + key + '"' + (p.group_key === key ? " selected" : "") + '>' + GROUP_LABELS[key] + "</option>";
+              categories.map(function(c){
+                return '<option value="' + escapeHtml(c.slug) + '"' + (p.group_key === c.slug ? " selected" : "") + '>' +
+                  escapeHtml(c.name) + (c.is_active ? "" : " (inactiva)") + "</option>";
               }).join("") +
+              // Si el producto quedó con una categoría que ya no existe
+              // en la lista (borrada a mano en la base), la mostramos
+              // igual para no perderla de vista al guardar sin querer.
+              (p.group_key && !categories.some(function(c){ return c.slug === p.group_key; })
+                ? '<option value="' + escapeHtml(p.group_key) + '" selected>' + escapeHtml(p.group_key) + " (categoría desconocida)</option>"
+                : "") +
             "</select></label>" +
           '<label class="form-field">Condición' +
             '<input type="text" class="f-condition" value="' + escapeHtml(p.condition_label) + '" placeholder="Ej: Usado · Batería 91%"></label>' +
@@ -714,7 +900,7 @@ button{ font-family:inherit; }
     var blank = {
       id: null,
       title: "",
-      group_key: "usados",
+      group_key: (categories[0] && categories[0].slug) || "",
       condition_label: "",
       color: "",
       current_price: "",

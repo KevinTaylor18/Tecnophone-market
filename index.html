@@ -520,33 +520,11 @@ button{ font-family:inherit; }
         <span class="eyebrow">Catálogo</span>
         <h2>Equipos en stock esta semana</h2>
       </div>
-      <div class="catalog-tabs">
-        <a href="#usados" class="tab-link">iPhones usados</a>
-        <a href="#nuevos" class="tab-link">iPhones nuevos</a>
-        <a href="#otras" class="tab-link">Otras marcas</a>
-      </div>
+      <div class="catalog-tabs" id="catalogTabs"></div>
     </div>
 
-    <div id="usados" class="catalog-group">
-      <div class="catalog-group-title"><h3>iPhones usados seleccionados</h3><div class="divider"></div></div>
-      <div class="product-grid" id="grid-usados" data-catalog-grid="usados">
-        <p class="catalog-loading">Cargando catálogo…</p>
-      </div>
-    </div>
-
-    <div id="nuevos" class="catalog-group">
-      <div class="catalog-group-title"><h3>iPhones nuevos sellados</h3><div class="divider"></div></div>
-      <div class="product-grid" id="grid-nuevos" data-catalog-grid="nuevos">
-        <p class="catalog-loading">Cargando catálogo…</p>
-      </div>
-    </div>
-
-    <div id="otras" class="catalog-group">
-      <div class="catalog-group-title"><h3>Otras marcas</h3><div class="divider"></div></div>
-      <div class="product-grid" id="grid-otras" data-catalog-grid="otras">
-        <p class="catalog-loading">Cargando catálogo…</p>
-      </div>
-      <p class="catalog-note">Precios y stock cargados en vivo desde la base de datos.</p>
+    <div id="catalogGroups">
+      <p class="catalog-loading">Cargando catálogo…</p>
     </div>
 
   </div>
@@ -693,11 +671,8 @@ button{ font-family:inherit; }
         </a>
         <p>Venta de iPhones nuevos y usados seleccionados, con revisión técnica, garantía de 60 días y asesoramiento cercano.</p>
       </div>
-      <div class="footer-col">
+      <div class="footer-col" id="footerCatalogLinks">
         <span class="col-title">Catálogo</span>
-        <a href="#usados">iPhones usados</a>
-        <a href="#nuevos">iPhones nuevos</a>
-        <a href="#otras">Otras marcas</a>
       </div>
       <div class="footer-col">
         <span class="col-title">Comprar</span>
@@ -936,44 +911,71 @@ button{ font-family:inherit; }
     });
   }
 
+  /* ---- Catálogo: una sección por cada categoría activa que tenga al
+     menos un producto, en el orden definido en la tabla "categories".
+     Agregar una categoría nueva desde el admin no requiere tocar este
+     HTML/JS — categories.slug es lo único que conecta con
+     products.group_key. */
   function loadCatalog(){
-    var grids = {
-      usados: document.getElementById("grid-usados"),
-      nuevos: document.getElementById("grid-nuevos"),
-      otras: document.getElementById("grid-otras")
-    };
-    var endpoint = CONFIG.supabaseUrl + "/rest/v1/products?select=*&is_active=eq.true&order=sort_order.asc";
+    var tabsEl = document.getElementById("catalogTabs");
+    var groupsEl = document.getElementById("catalogGroups");
+    var footerLinksEl = document.getElementById("footerCatalogLinks");
+    var headers = { apikey: CONFIG.supabaseAnonKey, Authorization: "Bearer " + CONFIG.supabaseAnonKey };
 
-    fetch(endpoint, {
-      headers: {
-        apikey: CONFIG.supabaseAnonKey,
-        Authorization: "Bearer " + CONFIG.supabaseAnonKey
-      }
-    })
-      .then(function(res){
+    function getJson(path){
+      return fetch(CONFIG.supabaseUrl + path, { headers: headers }).then(function(res){
         if (!res.ok) throw new Error("HTTP " + res.status);
         return res.json();
-      })
-      .then(function(products){
-        Object.keys(grids).forEach(function(key){ if (grids[key]) grids[key].innerHTML = ""; });
+      });
+    }
+
+    Promise.all([
+      getJson("/rest/v1/categories?select=*&is_active=eq.true&order=sort_order.asc"),
+      getJson("/rest/v1/products?select=*&is_active=eq.true&order=sort_order.asc")
+    ])
+      .then(function(results){
+        var categories = results[0];
+        var products = results[1];
+
+        var productsBySlug = {};
         products.forEach(function(p){
-          var grid = grids[p.group_key];
-          if (grid) grid.insertAdjacentHTML("beforeend", productCardHtml(p));
+          (productsBySlug[p.group_key] = productsBySlug[p.group_key] || []).push(p);
         });
-        if (grids.nuevos) grids.nuevos.insertAdjacentHTML("beforeend", CUSTOM_REQUEST_CARD_HTML);
-        Object.keys(grids).forEach(function(key){
-          var grid = grids[key];
-          if (grid && !grid.children.length){
-            grid.innerHTML = '<p class="catalog-error">Todavía no hay equipos cargados en esta categoría.</p>';
-          }
+
+        var tabsHtml = "";
+        var footerLinksHtml = "";
+        var groupsHtml = "";
+        categories.forEach(function(cat){
+          var list = productsBySlug[cat.slug];
+          if (!list || !list.length) return; // sin productos: ni pestaña ni sección
+
+          var slug = escapeHtml(cat.slug);
+          var name = escapeHtml(cat.name);
+
+          tabsHtml += '<a href="#' + slug + '" class="tab-link">' + name + "</a>";
+          footerLinksHtml += '<a href="#' + slug + '">' + name + "</a>";
+
+          var cardsHtml = list.map(productCardHtml).join("");
+          if (cat.slug === "nuevos") cardsHtml += CUSTOM_REQUEST_CARD_HTML;
+
+          groupsHtml +=
+            '<div id="' + slug + '" class="catalog-group">' +
+              '<div class="catalog-group-title"><h3>' + name + "</h3><div class=\"divider\"></div></div>" +
+              '<div class="product-grid" data-catalog-grid="' + slug + '">' + cardsHtml + "</div>" +
+            "</div>";
         });
+
+        tabsEl.innerHTML = tabsHtml;
+        groupsEl.innerHTML = groupsHtml || '<p class="catalog-error">Todavía no hay equipos cargados.</p>';
+        if (groupsHtml) groupsEl.insertAdjacentHTML("beforeend", '<p class="catalog-note">Precios y stock cargados en vivo desde la base de datos.</p>');
+        if (footerLinksEl) footerLinksEl.insertAdjacentHTML("beforeend", footerLinksHtml);
+
         initCarousels();
       })
       .catch(function(err){
         console.error("[Tecnophone] Error cargando catálogo desde Supabase:", err);
-        Object.keys(grids).forEach(function(key){
-          if (grids[key]) grids[key].innerHTML = '<p class="catalog-error">No pudimos cargar el catálogo. Probá recargar la página o escribinos por WhatsApp.</p>';
-        });
+        tabsEl.innerHTML = "";
+        groupsEl.innerHTML = '<p class="catalog-error">No pudimos cargar el catálogo. Probá recargar la página o escribinos por WhatsApp.</p>';
       });
   }
 
