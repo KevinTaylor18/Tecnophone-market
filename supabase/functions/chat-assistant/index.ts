@@ -8,15 +8,20 @@
 // index.html ni en ningún archivo público.
 //
 // ⚠️ PUNTO DE AISLAMIENTO — proveedor de IA
-// Toda la lógica específica de Gemini vive en callAiProvider(), más
-// abajo. El día que quieras cambiar a la API de Claude (Anthropic):
-//   1. Reescribís el CONTENIDO de callAiProvider() para llamar a la
-//      API de Claude en vez de a Gemini.
-//   2. Cambiás el nombre del secret (por ej. de GEMINI_API_KEY a
-//      ANTHROPIC_API_KEY) con `supabase secrets set`.
+// Toda la lógica específica del proveedor vive en callAiProvider(), más
+// abajo. Hoy usa la API de Claude (Anthropic) — antes usaba Gemini. El
+// día que quieras cambiar de proveedor de nuevo:
+//   1. Reescribís el CONTENIDO de callAiProvider() para llamar a la API
+//      del nuevo proveedor.
+//   2. Cambiás el nombre del secret (hoy ANTHROPIC_API_KEY) con
+//      `supabase secrets set`.
 // El resto de este archivo (CORS, lectura del catálogo, el manejo de
 // errores) no necesita tocarse, y el sitio (index.html) tampoco: sigue
-// llamando al mismo endpoint de siempre.
+// llamando al mismo endpoint de siempre, con el mismo formato de
+// mensajes de siempre ({ role: "user" | "model", content }) — la
+// conversión al formato que pida cada proveedor pasa acá adentro.
+
+import Anthropic from "npm:@anthropic-ai/sdk@0.125.0";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -83,85 +88,90 @@ class RateLimitedError extends Error {
 }
 
 /* ============================================================
-   PUNTO DE AISLAMIENTO — proveedor de IA (hoy: Gemini)
+   PUNTO DE AISLAMIENTO — proveedor de IA (hoy: Claude / Anthropic)
    ============================================================ */
 async function callAiProvider(
   systemPrompt: string,
   history: ChatMessage[],
   userMessage: string,
 ): Promise<string> {
-  const apiKey = Deno.env.get("GEMINI_API_KEY");
+  const apiKey = Deno.env.get("ANTHROPIC_API_KEY");
   if (!apiKey) throw new Error("missing_api_key");
 
-  // Nombre del modelo de Gemini a usar. Se eligió la variante "lite":
-  // no tiene razonamiento interno (respuestas más rápidas y baratas en
-  // tokens) y el free tier le da límites de solicitudes por minuto más
-  // generosos que a los modelos "flash" comunes. Si Google renombra o
-  // retira este modelo, solo hay que cambiar esta línea.
-  const model = "gemini-3.5-flash-lite";
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
+  // Nombre del modelo de Claude a usar. Si Anthropic renombra o retira
+  // este modelo, solo hay que cambiar esta línea.
+  const model = "claude-sonnet-5";
 
-  const contents = history
+  // Apagamos los reintentos automáticos del SDK: el manejo de 429/529 de
+  // acá abajo replica a propósito la misma lógica que ya usábamos con
+  // Gemini (un solo reintento ante saturación del proveedor, nunca ante
+  // un 429 — ese es nuestro propio límite de cuota).
+  const client = new Anthropic({ apiKey, maxRetries: 0 });
+
+  // Claude espera los mensajes como { role: "user" | "assistant", content }.
+  // El resto del sistema (index.html, el historial que guarda el chat en
+  // el navegador) sigue usando "model" para el rol del asistente —así se
+  // armó cuando el proveedor era Gemini—, así que la traducción al
+  // formato de Claude pasa acá adentro, sin tocar nada más.
+  const messages: Anthropic.MessageParam[] = history
     .filter((m) => m.role === "user" || m.role === "model")
-    .map((m) => ({ role: m.role, parts: [{ text: m.content }] }));
-  contents.push({ role: "user", parts: [{ text: userMessage }] });
+    .map((m): Anthropic.MessageParam => ({
+      role: m.role === "model" ? "assistant" : "user",
+      content: m.content,
+    }));
+  messages.push({ role: "user", content: userMessage });
 
-  const requestBody = JSON.stringify({
-    systemInstruction: { parts: [{ text: systemPrompt }] },
-    contents,
-    generationConfig: { maxOutputTokens: 800, temperature: 0.6 },
-  });
-
-  // Este free tier a veces tiene picos de lentitud del lado de Google
-  // (la mayoría de las respuestas tardan 1-3s, pero ocasionalmente
-  // alguna se cuelga 20s o más). Le ponemos un techo por intento para
-  // que el visitante nunca espere una eternidad: si se pasa, se corta
-  // y el chat cae al mensaje de "probá por WhatsApp" en vez de colgarse.
-  async function attempt(): Promise<Response> {
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 12000);
-    try {
-      return await fetch(url, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: requestBody,
-        signal: controller.signal,
-      });
-    } finally {
-      clearTimeout(timeoutId);
-    }
+  // Dejamos el "thinking" adaptativo prendido (Claude Sonnet 5 lo corre
+  // así por default) pero con esfuerzo "low": es la config recomendada
+  // para chats cortos y sensibles a la latencia como este, en vez de la
+  // config por default ("high") pensada para tareas de código/agentes.
+  async function attempt(): Promise<Anthropic.Message> {
+    return await client.messages.create(
+      {
+        model,
+        max_tokens: 2048,
+        system: systemPrompt,
+        messages,
+        thinking: { type: "adaptive" },
+        output_config: { effort: "low" },
+      },
+      { timeout: 12000 }, // mismo techo de tiempo por intento que tenía Gemini
+    );
   }
 
-  let res: Response;
+  let response: Anthropic.Message;
   try {
-    res = await attempt();
-  } catch (_e) {
-    throw new Error("gemini_timeout");
-  }
+    response = await attempt();
+  } catch (err) {
+    if (err instanceof Anthropic.RateLimitError) throw new RateLimitedError();
 
-  // Gemini devuelve 503 cuando el modelo está saturado del lado de
-  // Google — suele ser cuestión de segundos, así que probamos una vez
-  // más antes de rendirnos (nunca reintentamos un 429: ese sí es
-  // nuestro propio límite de cuota, reintentar no ayuda).
-  if (res.status === 503) {
-    await new Promise((resolve) => setTimeout(resolve, 800));
-    try {
-      res = await attempt();
-    } catch (_e) {
-      throw new Error("gemini_timeout_retry");
+    // Claude devuelve "overloaded_error" (HTTP 529) cuando está saturado
+    // del lado de Anthropic — el equivalente al 503 que devolvía Gemini.
+    // Suele ser cuestión de segundos, así que probamos una vez más antes
+    // de rendirnos.
+    if (err instanceof Anthropic.APIError && err.status === 529) {
+      await new Promise((resolve) => setTimeout(resolve, 800));
+      try {
+        response = await attempt();
+      } catch (err2) {
+        if (err2 instanceof Anthropic.RateLimitError) throw new RateLimitedError();
+        throw new Error(`claude_error_retry: ${String(err2)}`);
+      }
+    } else if (err instanceof Anthropic.APIConnectionError) {
+      // Se cortó por el timeout de 12s o por un problema de red — sin
+      // reintento, igual que pasaba con Gemini.
+      throw new Error("claude_timeout");
+    } else {
+      throw new Error(`claude_error: ${String(err)}`);
     }
   }
 
-  if (res.status === 429) throw new RateLimitedError();
-  if (!res.ok) {
-    const text = await res.text().catch(() => "");
-    throw new Error(`gemini_error_${res.status}: ${text}`);
+  let reply = "";
+  for (const block of response.content) {
+    if (block.type === "text") reply += block.text;
   }
-
-  const data = await res.json();
-  const reply = data?.candidates?.[0]?.content?.parts?.[0]?.text;
   if (!reply) throw new Error("empty_reply");
-  return String(reply).trim();
+  return reply.trim();
 }
 
 Deno.serve(async (req: Request) => {

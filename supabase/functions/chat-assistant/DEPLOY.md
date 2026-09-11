@@ -1,8 +1,8 @@
 # Cómo desplegar el chat con IA (Edge Function)
 
 El código de la función ya está escrito en `index.ts`, en esta misma carpeta.
-Estos pasos los corrés vos en tu propia terminal — la clave de Gemini nunca
-me la pasás a mí, ni queda en ningún archivo del proyecto.
+Estos pasos los corrés vos en tu propia terminal — la clave de Claude
+(Anthropic) nunca me la pasás a mí, ni queda en ningún archivo del proyecto.
 
 Corré todo esto en PowerShell, con la carpeta del proyecto como ubicación
 (`C:\Users\kevin\OneDrive\Escritorio\Pagina Web`).
@@ -59,13 +59,17 @@ crear el proyecto). Si no la tenés a mano, se puede resetear desde el
 Dashboard de Supabase → Project Settings → Database → "Reset database
 password".
 
-## 5. Guardar tu clave de Gemini como secret (nunca en un archivo)
+## 5. Guardar tu clave de Claude (Anthropic) como secret (nunca en un archivo)
 
 ```powershell
-supabase secrets set GEMINI_API_KEY=pegá_aquí_tu_clave_real_de_gemini
+supabase secrets set ANTHROPIC_API_KEY=pegá_aquí_tu_clave_real_de_anthropic
 ```
 Este comando la manda directo a Supabase de forma segura — no queda
 guardada en ningún archivo de este proyecto ni en tu historial de git.
+
+Si antes tenías cargado `GEMINI_API_KEY` (de cuando el chat usaba Gemini),
+ya no hace falta — podés borrarlo si querés con
+`supabase secrets unset GEMINI_API_KEY`.
 
 ## 6. Desplegar la función
 
@@ -98,11 +102,12 @@ usando el catálogo real de la tabla `products`.
 
 ---
 
-## Si en el futuro querés cambiar de Gemini a Claude
+## Si en el futuro querés cambiar de proveedor de nuevo
 
-Solo hace falta tocar `index.ts`: reescribir el contenido de la función
-`callAiProvider()` (llamar a la API de Claude en vez de a Gemini) y guardar
-la nueva clave con `supabase secrets set ANTHROPIC_API_KEY=...`. Después,
-volver a correr `supabase functions deploy chat-assistant`. Nada en
-`index.html` necesita cambiar — sigue hablando con el mismo endpoint de
+Hoy el chat usa la API de Claude (Anthropic). Para cambiar a otro proveedor
+más adelante, solo hace falta tocar `index.ts`: reescribir el contenido de
+la función `callAiProvider()` (llamar a la API del nuevo proveedor) y
+guardar la nueva clave con `supabase secrets set NOMBRE_DEL_SECRET=...`.
+Después, volver a correr `supabase functions deploy chat-assistant`. Nada
+en `index.html` necesita cambiar — sigue hablando con el mismo endpoint de
 siempre.
