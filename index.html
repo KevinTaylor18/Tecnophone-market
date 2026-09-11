@@ -367,6 +367,57 @@ button{ font-family:inherit; }
 @media print{
   .site-header, .nav-toggle{ display:none; }
 }
+
+/* ============ Chat flotante con IA ============ */
+.chat-widget{ position:fixed; right:20px; bottom:20px; z-index:70; font-family:var(--font-body); }
+.chat-bubble{
+  width:60px; height:60px; border-radius:50%; background:var(--accent); color:var(--white);
+  border:none; box-shadow:var(--shadow-card-hover); cursor:pointer; display:flex; align-items:center; justify-content:center;
+  transition:background var(--dur-fast) var(--ease-standard), transform var(--dur-fast) var(--ease-standard);
+}
+.chat-bubble:hover{ background:var(--accent-hover); }
+.chat-bubble:active{ transform:scale(0.95); }
+.chat-window{
+  position:absolute; right:0; bottom:76px; width:360px; max-width:calc(100vw - 40px);
+  height:520px; max-height:70vh; background:var(--bg-surface); border-radius:var(--radius-lg);
+  box-shadow:0 24px 64px rgba(10,10,10,0.28); display:flex; flex-direction:column; overflow:hidden;
+}
+.chat-header{
+  background:var(--bg-inverse); padding:14px 16px; display:flex; align-items:center;
+  justify-content:space-between; gap:10px; flex-shrink:0;
+}
+.chat-header-info{ display:flex; align-items:center; gap:10px; min-width:0; }
+.chat-header-info img{ height:32px; width:auto; border-radius:6px; flex-shrink:0; }
+.chat-header-text{ display:flex; flex-direction:column; min-width:0; }
+.chat-title{ font-family:var(--font-display); font-weight:700; font-size:14px; color:var(--white); }
+.chat-subtitle{ font-size:12px; color:var(--gray-500); }
+.chat-close{
+  background:none; border:none; color:var(--white); font-size:22px; line-height:1;
+  cursor:pointer; padding:4px; flex-shrink:0;
+}
+.chat-messages{ flex:1; overflow-y:auto; padding:14px 16px; display:flex; flex-direction:column; gap:10px; background:var(--bg-sunken); }
+.chat-message{ max-width:82%; padding:10px 13px; border-radius:14px; font-size:14px; line-height:1.45; white-space:pre-wrap; }
+.chat-message.user{ align-self:flex-end; background:var(--accent); color:var(--white); border-bottom-right-radius:4px; }
+.chat-message.assistant{ align-self:flex-start; background:var(--white); color:var(--text-primary); box-shadow:var(--shadow-card); border-bottom-left-radius:4px; }
+.chat-message.is-typing{ color:var(--text-secondary); font-style:italic; }
+.chat-input-row{ display:flex; gap:8px; padding:12px; border-top:1px solid var(--border-subtle); background:var(--bg-surface); flex-shrink:0; }
+.chat-input-row input{
+  flex:1; min-width:0; font-family:var(--font-body); font-size:14px; padding:11px 14px;
+  border:1px solid var(--border-subtle); border-radius:var(--radius-pill); background:var(--white); color:var(--text-primary);
+}
+.chat-input-row input:focus{ border-color:var(--accent); outline:none; }
+.chat-send{
+  width:40px; height:40px; border-radius:50%; background:var(--accent); color:var(--white); border:none;
+  cursor:pointer; display:flex; align-items:center; justify-content:center; flex-shrink:0; font-size:15px;
+  transition:background var(--dur-fast) var(--ease-standard);
+}
+.chat-send:hover:not(:disabled){ background:var(--accent-hover); }
+.chat-send:disabled{ opacity:0.5; cursor:not-allowed; }
+
+@media (max-width:480px){
+  .chat-widget{ right:14px; bottom:14px; }
+  .chat-window{ width:calc(100vw - 28px); height:min(70vh, 560px); bottom:74px; }
+}
 </style>
 </head>
 <body>
@@ -1036,6 +1087,154 @@ button{ font-family:inherit; }
   var yearEl = document.getElementById("year");
   if (yearEl) yearEl.textContent = String(new Date().getFullYear());
 
+})();
+</script>
+
+<!-- ============ Chat flotante con IA ============ -->
+<div class="chat-widget" id="chatWidget">
+  <div class="chat-window" id="chatWindow" hidden>
+    <div class="chat-header">
+      <div class="chat-header-info">
+        <img src="assets/logo-icon-black.png" alt="">
+        <div class="chat-header-text">
+          <span class="chat-title">Asistente Tecnophone</span>
+          <span class="chat-subtitle">Te ayudo a elegir tu equipo</span>
+        </div>
+      </div>
+      <button type="button" class="chat-close" id="chatClose" aria-label="Cerrar chat">&times;</button>
+    </div>
+    <div class="chat-messages" id="chatMessages" aria-live="polite"></div>
+    <form class="chat-input-row" id="chatForm">
+      <input type="text" id="chatInput" placeholder="Escribí tu consulta…" autocomplete="off" maxlength="500">
+      <button type="submit" class="chat-send" id="chatSendBtn" aria-label="Enviar">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+      </button>
+    </form>
+  </div>
+  <button type="button" class="chat-bubble" id="chatToggle" aria-label="Abrir chat" aria-expanded="false">
+    <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg>
+  </button>
+</div>
+
+<script>
+/* ============================================================
+   Chat con IA — módulo COMPLETAMENTE APARTE del resto del sitio.
+   El único lugar que sabe que "la IA" es Gemini es la función
+   askAssistant() de acá abajo: le pega a nuestra propia Supabase
+   Edge Function (que a su vez le pega a Gemini). El día de mañana,
+   para cambiar a la API de Claude, se reescribe la Edge Function
+   del lado del servidor — esta función de acá no cambia un carácter,
+   porque sigue llamando al mismo endpoint propio de siempre.
+   ============================================================ */
+(function(){
+  "use strict";
+
+  var CHAT_CONFIG = {
+    supabaseUrl: "https://vkglwajqvxizxfcqfdsd.supabase.co",
+    supabaseAnonKey: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZrZ2x3YWpxdnhpenhmY3FmZHNkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg2MjEzNzQsImV4cCI6MjEwNDE5NzM3NH0.XlD4R_7giKG7B5XTk5_kMlvg7ueFlKDdACnPuUnMSBY",
+    functionName: "chat-assistant"
+  };
+
+  /* ---- ÚNICO punto de contacto con el backend de IA ---- */
+  function askAssistant(userMessage, history){
+    var endpoint = CHAT_CONFIG.supabaseUrl + "/functions/v1/" + CHAT_CONFIG.functionName;
+    return fetch(endpoint, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        apikey: CHAT_CONFIG.supabaseAnonKey,
+        Authorization: "Bearer " + CHAT_CONFIG.supabaseAnonKey
+      },
+      body: JSON.stringify({ message: userMessage, history: history })
+    }).then(function(res){
+      return res.json().catch(function(){ return null; });
+    }).then(function(data){
+      // La Edge Function siempre manda un "reply" con onda, incluso
+      // cuando hay un error de su lado (límite de Gemini, etc.) —
+      // por eso alcanza con mirar eso, no hace falta chequear res.ok.
+      if (data && data.reply) return data.reply;
+      throw new Error("empty_reply");
+    });
+  }
+
+  var widget = document.getElementById("chatWidget");
+  if (!widget) return;
+
+  var toggleBtn = document.getElementById("chatToggle");
+  var closeBtn = document.getElementById("chatClose");
+  var windowEl = document.getElementById("chatWindow");
+  var messagesEl = document.getElementById("chatMessages");
+  var formEl = document.getElementById("chatForm");
+  var inputEl = document.getElementById("chatInput");
+  var sendBtn = document.getElementById("chatSendBtn");
+
+  var history = [];
+  var greeted = false;
+
+  function addMessage(role, text){
+    var div = document.createElement("div");
+    div.className = "chat-message " + (role === "user" ? "user" : "assistant");
+    div.textContent = text;
+    messagesEl.appendChild(div);
+    messagesEl.scrollTop = messagesEl.scrollHeight;
+    return div;
+  }
+
+  function openChat(){
+    windowEl.hidden = false;
+    toggleBtn.setAttribute("aria-expanded", "true");
+    if (!greeted){
+      greeted = true;
+      addMessage("assistant", "¡Hola! Soy el asistente de Tecnophone Market. Contame qué equipo estás buscando (por ejemplo \"un iPhone bueno y barato\") y te tiro opciones reales del catálogo.");
+    }
+    inputEl.focus();
+  }
+
+  function closeChat(){
+    windowEl.hidden = true;
+    toggleBtn.setAttribute("aria-expanded", "false");
+  }
+
+  toggleBtn.addEventListener("click", function(){
+    if (windowEl.hidden) openChat(); else closeChat();
+  });
+  closeBtn.addEventListener("click", closeChat);
+  document.addEventListener("keydown", function(e){
+    if (e.key === "Escape" && !windowEl.hidden) closeChat();
+  });
+
+  formEl.addEventListener("submit", function(e){
+    e.preventDefault();
+    var text = inputEl.value.trim();
+    if (!text) return;
+
+    addMessage("user", text);
+    var historyForRequest = history.slice(-10);
+    history.push({ role: "user", content: text });
+
+    inputEl.value = "";
+    inputEl.disabled = true;
+    sendBtn.disabled = true;
+
+    var typingEl = addMessage("assistant", "Escribiendo…");
+    typingEl.classList.add("is-typing");
+
+    askAssistant(text, historyForRequest)
+      .then(function(reply){
+        typingEl.remove();
+        addMessage("assistant", reply);
+        history.push({ role: "model", content: reply });
+      })
+      .catch(function(){
+        typingEl.remove();
+        addMessage("assistant", "No pudimos conectar con el asistente. Probá de nuevo en un momento o escribinos por WhatsApp.");
+      })
+      .then(function(){
+        inputEl.disabled = false;
+        sendBtn.disabled = false;
+        inputEl.focus();
+      });
+  });
 })();
 </script>
 </body>
