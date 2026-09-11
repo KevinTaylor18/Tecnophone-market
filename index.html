@@ -929,13 +929,39 @@ button{ font-family:inherit; }
       });
     }
 
-    Promise.all([
+    // Promise.allSettled (no Promise.all): si "categories" falla pero
+    // "products" llega bien, igual mostramos el catálogo (agrupado por
+    // el group_key crudo) en vez de tumbar todo el sitio por un
+    // problema puntual de una sola tabla — ver el fallback más abajo.
+    Promise.allSettled([
       getJson("/rest/v1/categories?select=*&is_active=eq.true&order=sort_order.asc"),
       getJson("/rest/v1/products?select=*&is_active=eq.true&order=sort_order.asc")
     ])
       .then(function(results){
-        var categories = results[0];
-        var products = results[1];
+        var categoriesResult = results[0];
+        var productsResult = results[1];
+
+        if (productsResult.status === "rejected") throw productsResult.reason;
+        var products = productsResult.value;
+
+        var categories;
+        if (categoriesResult.status === "fulfilled"){
+          categories = categoriesResult.value;
+        } else {
+          // Sin categorías, pero con productos: armamos una categoría
+          // "cruda" por cada group_key distinto que aparezca, para que
+          // el catálogo se siga viendo (con nombres menos prolijos)
+          // en vez de mostrar el error de "no pudimos cargar nada".
+          console.error("[Tecnophone] No se pudieron cargar las categorías, se arma el catálogo con los group_key tal cual:", categoriesResult.reason);
+          var seen = {};
+          categories = [];
+          products.forEach(function(p){
+            if (!seen[p.group_key]){
+              seen[p.group_key] = true;
+              categories.push({ slug: p.group_key, name: p.group_key, sort_order: categories.length, is_active: true });
+            }
+          });
+        }
 
         var productsBySlug = {};
         products.forEach(function(p){
