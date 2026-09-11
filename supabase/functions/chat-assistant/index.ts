@@ -93,9 +93,12 @@ async function callAiProvider(
   const apiKey = Deno.env.get("GEMINI_API_KEY");
   if (!apiKey) throw new Error("missing_api_key");
 
-  // Nombre del modelo de Gemini a usar. Si Google renombra o actualiza
-  // los modelos gratuitos de "Flash", solo hay que cambiar esta línea.
-  const model = "gemini-3.6-flash";
+  // Nombre del modelo de Gemini a usar. Se eligió la variante "lite":
+  // no tiene razonamiento interno (respuestas más rápidas y baratas en
+  // tokens) y el free tier le da límites de solicitudes por minuto más
+  // generosos que a los modelos "flash" comunes. Si Google renombra o
+  // retira este modelo, solo hay que cambiar esta línea.
+  const model = "gemini-3.5-flash-lite";
   const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
 
   const contents = history
@@ -106,22 +109,35 @@ async function callAiProvider(
   const requestBody = JSON.stringify({
     systemInstruction: { parts: [{ text: systemPrompt }] },
     contents,
-    // Este modelo gasta tokens en "razonamiento interno" antes de
-    // escribir la respuesta (thinkingConfig no es un argumento válido
-    // para él, así que no se puede desactivar) — por eso el límite
-    // tiene que ser generoso, para que no corte la respuesta a mitad.
-    generationConfig: { maxOutputTokens: 3000, temperature: 0.6 },
+    generationConfig: { maxOutputTokens: 800, temperature: 0.6 },
   });
 
+  // Este free tier a veces tiene picos de lentitud del lado de Google
+  // (la mayoría de las respuestas tardan 1-3s, pero ocasionalmente
+  // alguna se cuelga 20s o más). Le ponemos un techo por intento para
+  // que el visitante nunca espere una eternidad: si se pasa, se corta
+  // y el chat cae al mensaje de "probá por WhatsApp" en vez de colgarse.
   async function attempt(): Promise<Response> {
-    return fetch(url, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: requestBody,
-    });
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 12000);
+    try {
+      return await fetch(url, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: requestBody,
+        signal: controller.signal,
+      });
+    } finally {
+      clearTimeout(timeoutId);
+    }
   }
 
-  let res = await attempt();
+  let res: Response;
+  try {
+    res = await attempt();
+  } catch (_e) {
+    throw new Error("gemini_timeout");
+  }
 
   // Gemini devuelve 503 cuando el modelo está saturado del lado de
   // Google — suele ser cuestión de segundos, así que probamos una vez
@@ -129,7 +145,11 @@ async function callAiProvider(
   // nuestro propio límite de cuota, reintentar no ayuda).
   if (res.status === 503) {
     await new Promise((resolve) => setTimeout(resolve, 800));
-    res = await attempt();
+    try {
+      res = await attempt();
+    } catch (_e) {
+      throw new Error("gemini_timeout_retry");
+    }
   }
 
   if (res.status === 429) throw new RateLimitedError();
