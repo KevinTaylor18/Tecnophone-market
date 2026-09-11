@@ -95,7 +95,7 @@ async function callAiProvider(
 
   // Nombre del modelo de Gemini a usar. Si Google renombra o actualiza
   // los modelos gratuitos de "Flash", solo hay que cambiar esta línea.
-  const model = "gemini-2.0-flash";
+  const model = "gemini-3.6-flash";
   const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
 
   const contents = history
@@ -103,15 +103,34 @@ async function callAiProvider(
     .map((m) => ({ role: m.role, parts: [{ text: m.content }] }));
   contents.push({ role: "user", parts: [{ text: userMessage }] });
 
-  const res = await fetch(url, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      systemInstruction: { parts: [{ text: systemPrompt }] },
-      contents,
-      generationConfig: { maxOutputTokens: 400, temperature: 0.6 },
-    }),
+  const requestBody = JSON.stringify({
+    systemInstruction: { parts: [{ text: systemPrompt }] },
+    contents,
+    // Este modelo gasta tokens en "razonamiento interno" antes de
+    // escribir la respuesta (thinkingConfig no es un argumento válido
+    // para él, así que no se puede desactivar) — por eso el límite
+    // tiene que ser generoso, para que no corte la respuesta a mitad.
+    generationConfig: { maxOutputTokens: 3000, temperature: 0.6 },
   });
+
+  async function attempt(): Promise<Response> {
+    return fetch(url, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: requestBody,
+    });
+  }
+
+  let res = await attempt();
+
+  // Gemini devuelve 503 cuando el modelo está saturado del lado de
+  // Google — suele ser cuestión de segundos, así que probamos una vez
+  // más antes de rendirnos (nunca reintentamos un 429: ese sí es
+  // nuestro propio límite de cuota, reintentar no ayuda).
+  if (res.status === 503) {
+    await new Promise((resolve) => setTimeout(resolve, 800));
+    res = await attempt();
+  }
 
   if (res.status === 429) throw new RateLimitedError();
   if (!res.ok) {
