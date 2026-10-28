@@ -298,23 +298,20 @@ button{ font-family:inherit; }
 .process-step p{ font-size:15px; line-height:1.6; color:var(--gray-500); }
 
 /* ============ Testimonials ============ */
-.testimonial-grid{ display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:var(--space-5); margin-top:clamp(28px,4vw,48px); }
+/* 1 columna en mobile, 2 × 2 en ancho medio, 4 en fila en pantallas anchas
+   (con 4 testimonios, auto-fit dejaba una tarjeta sola en la segunda fila). */
+.testimonial-grid{ display:grid; grid-template-columns:1fr; gap:var(--space-5); margin-top:clamp(28px,4vw,48px); }
+@media (min-width:640px){ .testimonial-grid{ grid-template-columns:repeat(2,1fr); } }
+@media (min-width:1200px){ .testimonial-grid{ grid-template-columns:repeat(4,1fr); } }
 .testimonial-card{
-  display:flex; flex-direction:column; gap:var(--space-5); margin:0; padding:var(--space-6);
-  background:var(--bg-surface); border:1px dashed var(--border-subtle); border-radius:var(--radius-lg);
+  display:flex; flex-direction:column; justify-content:space-between; gap:var(--space-5); margin:0; padding:var(--space-6);
+  background:var(--bg-surface); border:1px solid var(--border-subtle); border-radius:var(--radius-lg);
 }
 .testimonial-card blockquote{
-  margin:0; font-family:var(--font-display); font-weight:700; font-size:19px; line-height:1.45;
+  margin:0; font-family:var(--font-display); font-weight:700; font-size:18px; line-height:1.45;
   color:var(--text-primary); text-wrap:pretty;
 }
-.testimonial-figcaption{ display:flex; align-items:center; gap:12px; }
-.avatar-placeholder{
-  width:44px; height:44px; border-radius:var(--radius-pill); background:var(--bg-sunken);
-  display:flex; align-items:center; justify-content:center; font-size:10px; color:var(--text-secondary); flex-shrink:0;
-}
-.testimonial-who{ display:flex; flex-direction:column; }
 .testimonial-name{ font-weight:600; font-size:15px; color:var(--text-primary); }
-.testimonial-meta{ font-size:13px; color:var(--text-secondary); }
 
 /* ============ FAQ ============ */
 .faq-section{ background:var(--bg-sunken); }
@@ -551,32 +548,24 @@ button{ font-family:inherit; }
   <div class="container">
     <div class="section-head">
       <span class="eyebrow">Testimonios</span>
-      <h2>Lo que dicen quienes ya compraron</h2>
+      <h2>Lo que dicen nuestros clientes</h2>
     </div>
     <div class="testimonial-grid">
-      <figure class="testimonial-card">
-        <span class="eyebrow">Placeholder</span>
-        <blockquote>Acá va el testimonio real del cliente, entre 20 y 35 palabras, mencionando el modelo que compró y qué lo tranquilizó de la compra.</blockquote>
-        <figcaption class="testimonial-figcaption">
-          <div class="avatar-placeholder">Foto</div>
-          <div class="testimonial-who"><span class="testimonial-name">Nombre del cliente</span><span class="testimonial-meta">Modelo comprado · Ciudad</span></div>
-        </figcaption>
+      <figure class="testimonial-card" data-testimonial-id="testimonio-01">
+        <blockquote>“Me atendieron muy bien y me ayudaron a elegir el modelo que mejor se ajustaba a mi presupuesto. ¡Muy buena experiencia!”</blockquote>
+        <figcaption class="testimonial-name">Enrique</figcaption>
       </figure>
-      <figure class="testimonial-card">
-        <span class="eyebrow">Placeholder</span>
-        <blockquote>Segundo testimonio. Ideal si habla del asesoramiento previo a la compra o de la rapidez de la entrega.</blockquote>
-        <figcaption class="testimonial-figcaption">
-          <div class="avatar-placeholder">Foto</div>
-          <div class="testimonial-who"><span class="testimonial-name">Nombre del cliente</span><span class="testimonial-meta">Modelo comprado · Ciudad</span></div>
-        </figcaption>
+      <figure class="testimonial-card" data-testimonial-id="testimonio-02">
+        <blockquote>“Compré un iPhone usado y estaba en excelente estado. Me explicaron todo con claridad y me dieron garantía.”</blockquote>
+        <figcaption class="testimonial-name">Martín</figcaption>
       </figure>
-      <figure class="testimonial-card">
-        <span class="eyebrow">Placeholder</span>
-        <blockquote>Tercer testimonio. Sirve uno de alguien que usó la garantía y quedó conforme con la respuesta.</blockquote>
-        <figcaption class="testimonial-figcaption">
-          <div class="avatar-placeholder">Foto</div>
-          <div class="testimonial-who"><span class="testimonial-name">Nombre del cliente</span><span class="testimonial-meta">Modelo comprado · Ciudad</span></div>
-        </figcaption>
+      <figure class="testimonial-card" data-testimonial-id="testimonio-03">
+        <blockquote>“Servicio rápido y amable. Dejé mi teléfono para cambiar la batería y quedó funcionando perfecto.”</blockquote>
+        <figcaption class="testimonial-name">Adrián</figcaption>
+      </figure>
+      <figure class="testimonial-card" data-testimonial-id="testimonio-04">
+        <blockquote>“Tienen varios modelos y accesorios. El personal respondió todas mis preguntas sin apurarme.”</blockquote>
+        <figcaption class="testimonial-name">Martina</figcaption>
       </figure>
     </div>
   </div>
@@ -628,7 +617,7 @@ button{ font-family:inherit; }
       <a href="#" target="_blank" rel="noopener" class="btn btn-primary js-whatsapp-link" style="align-self:flex-start">Escribir por WhatsApp</a>
       <div class="contact-meta">
         <span>También podés escribirnos a <a href="mailto:tecnophonemarket@gmail.com">tecnophonemarket@gmail.com</a></span>
-        <span>Local a la calle · Reemplazar por dirección real</span>
+        <span>Local a la calle · Dirección</span>
       </div>
     </div>
     <form class="contact-form" id="contactForm" action="https://formspree.io/f/xnpqzgay" method="POST" novalidate>
